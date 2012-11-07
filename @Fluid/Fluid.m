@@ -1,5 +1,5 @@
 classdef Fluid
-    % Class for fluid properties based on NIST data.
+% Class for fluid properties based on NIST data.
 
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
