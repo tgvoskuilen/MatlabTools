@@ -42,10 +42,17 @@ Functions
 
 ### GetEvenSpacing
 
+If you have densely spaced data points, sometimes it is useful to down-sample
+the data for plotting markers that are visible. If your data is not evenly
+spaced, or is plotted on a log scale, this can become more difficult.
+
+This function gets evenly spaced down-sampled points with the option of
+specifying log or linear plotting scales.
+
 ### errorbars_xy
 
-### linear_projection
-
+This can be used to plot data with both X and Y error bars (which Matlab does
+not currently support).
 
 Demos
 ------------------------
