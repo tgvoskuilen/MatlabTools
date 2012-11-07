@@ -47,7 +47,7 @@ usage examples.
 Functions
 -------------------------
 
-### GetEvenSpacing
+### GetEvenSpacing.m
 
 If you have densely spaced data points, sometimes it is useful to down-sample
 the data for plotting markers that are visible. If your data is not evenly
@@ -57,26 +57,26 @@ This function gets evenly spaced down-sampled points with the option of
 specifying log or linear plotting scales. For example:
 
     r = GetEvenSpacing(x, y, 50);
-    plot(x, y, '-r');
+    plot(x, y, '-k');
     hold on;
-    plot(x(r), y(r), 'ok');
+    plot(x(r), y(r), 'sk','MarkerFaceColor','w');
 
-### errorbars_xy
+### errorbars_xy.m
 
 This can be used to plot data with both X and Y error bars (which Matlab does
 not currently support). This will eventually be rolled into the UC class.
 
-Demos
+Demo Scripts
 ------------------------
 
-### FluidDemo
+### FluidDemo.m
 
 Usage examples for the Fluid class.
 
-### GraphDemo
+### GraphDemo.m
 
 General Matlab tutorial on making graphs.
 
-### UCDemo
+### UCDemo.m
 
 Usage examples for the UC class.
