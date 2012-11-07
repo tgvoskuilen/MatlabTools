@@ -14,7 +14,11 @@ To update your versions of the code if you have already cloned the repository:
     cd ~/Personal/MATLAB/MatlabTools
     git pull
 
+To make this folder automatically on your Matlab path, add the following line
+to `startup.m` in your Matlab folder (create the file if it does not exist)
 
+    u = userpath;
+    addpath(strcat(u(1:end-1),filesep,'MatlabTools'));
 
 Classes
 --------------------------
@@ -57,7 +61,7 @@ specifying log or linear plotting scales. For example:
 ### errorbars_xy
 
 This can be used to plot data with both X and Y error bars (which Matlab does
-not currently support).
+not currently support). This will eventually be rolled into the UC class.
 
 Demos
 ------------------------
