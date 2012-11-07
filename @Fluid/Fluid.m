@@ -1,66 +1,67 @@
-%Class for fluid properties based on NIST data.
-%
-% Copyright (c) 2012, Tyler Voskuilen
-% All rights reserved.
-% 
-% Redistribution and use in source and binary forms, with or without 
-% modification, are permitted provided that the following conditions are 
-% met:
-% 
-%     * Redistributions of source code must retain the above copyright 
-%       notice, this list of conditions and the following disclaimer.
-%     * Redistributions in binary form must reproduce the above copyright 
-%       notice, this list of conditions and the following disclaimer in 
-%       the documentation and/or other materials provided with the distribution
-%       
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
-% POSSIBILITY OF SUCH DAMAGE.
-% 
-%
-% This class relies on NIST data saved in the @Fluid folder. Currently 
-% supported fluids are:
-%   Hydrogen (H2)
-%   Nitrogen (N2)
-%   Helium   (He)
-%   Methane  (CH4)
-%
-% More fluids can be added by modifying GetNISTData below
-%
-%-------------------------------------------------------------------------
-% Usage Instructions:
-%-------------------------------------------------------------------------
-% 1. Make sure the @Fluid folder is on your MATLAB path
-%
-% 2. Create a fluid object in your code using its name:
-%     H2 = Fluid('H2');
-%
-% 3. Access fluid properties using the Fluid class methods:
-%
-%     rho = H2.Density({10,'bar'},{280,'K'},'g_L');
-%
-%    or more simply (using the default units of bar, K, and g/L):
-%
-%     rho = H2.Density(10,280);
-%
-%    Other properties are accessed similarly:
-%      f = H2.Fugacity({10,'bar'},{280,'K'},'bar');
-%      Z = H2.Compressibility({10,'bar'},{280,'K'});
-%
-% 4. For uncertainty analysis, the density method also returns the
-%    derivative of density with respect to pressure and temperature
-%
-%     [rho, drho_dP, drho_dT] = H2.Density(10, 280);
-%
 classdef Fluid
+    %Class for fluid properties based on NIST data.
+    %
+    % Copyright (c) 2012, Tyler Voskuilen
+    % All rights reserved.
+    % 
+    % Redistribution and use in source and binary forms, with or without 
+    % modification, are permitted provided that the following conditions are 
+    % met:
+    % 
+    %     * Redistributions of source code must retain the above copyright 
+    %       notice, this list of conditions and the following disclaimer.
+    %     * Redistributions in binary form must reproduce the above copyright 
+    %       notice, this list of conditions and the following disclaimer in 
+    %       the documentation and/or other materials provided with the 
+    %       distribution
+    %       
+    % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS 
+    % IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    % THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR  
+    % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+    % CONTRIBUTORS BE  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+    % EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+    % PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+    % PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+    % LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+    % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+    % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    %
+    % This class relies on NIST data saved in the @Fluid folder. Currently 
+    % supported fluids are:
+    %   Hydrogen (H2)
+    %   Nitrogen (N2)
+    %   Helium   (He)
+    %   Methane  (CH4)
+    %
+    % More fluids can be added by modifying GetNISTData below
+    %
+    %-------------------------------------------------------------------------
+    % Usage Instructions:
+    %-------------------------------------------------------------------------
+    % 1. Make sure the @Fluid folder is on your MATLAB path
+    %
+    % 2. Create a fluid object in your code using its name:
+    %     H2 = Fluid('H2');
+    %
+    % 3. Access fluid properties using the Fluid class methods:
+    %
+    %     rho = H2.Density({10,'bar'},{280,'K'},'g_L');
+    %
+    %    or more simply (using the default units of bar, K, and g/L):
+    %
+    %     rho = H2.Density(10,280);
+    %
+    %    Other properties are accessed similarly:
+    %      f = H2.Fugacity({10,'bar'},{280,'K'},'bar');
+    %      Z = H2.Compressibility({10,'bar'},{280,'K'});
+    %
+    % 4. For uncertainty analysis, the density method also returns the
+    %    derivative of density with respect to pressure and temperature
+    %
+    %     [rho, drho_dP, drho_dT] = H2.Density(10, 280);
+    %
+
     %Fluid properties
     properties (SetAccess = private)
         P
