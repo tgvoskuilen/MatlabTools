@@ -61,6 +61,13 @@ specifying log or linear plotting scales. For example:
     hold on;
     plot(x(r), y(r), 'sk','MarkerFaceColor','w');
 
+or
+
+    r = GetEvenSpacing(x, y, 50, 'linear', 'log');
+    semilogy(x, y, '-k');
+    hold on;
+    semilogy(x(r), y(r), 'sk','MarkerFaceColor','w');
+    
 ### errorbars_xy.m
 
 This can be used to plot data with both X and Y error bars (which Matlab does
