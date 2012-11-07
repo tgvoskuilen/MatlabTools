@@ -1,0 +1,146 @@
+% Copyright (c) 2012, Tyler Voskuilen
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without 
+% modification, are permitted provided that the following conditions are 
+% met:
+% 
+%     * Redistributions of source code must retain the above copyright 
+%       notice, this list of conditions and the following disclaimer.
+%     * Redistributions in binary form must reproduce the above copyright 
+%       notice, this list of conditions and the following disclaimer in 
+%       the documentation and/or other materials provided with the 
+%       distribution
+%       
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS 
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR  
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+% CONTRIBUTORS BE  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+%------------------------------------------------------------------------------
+% Test the various functions of the UC class (not comprehensive!)
+
+clear all
+close all
+clc
+
+clear all
+% This script tests all the overloaded functions and methods in UC
+% Giving a name to a UC is not required, but is recommended. The name
+% will be carried through calculations so you can see its effect on later
+% UC objects.
+
+fprintf('Testing variable construction\n');
+x = UC([10 12 -12],[1 3 4],'x');  %vector values, vector errors
+y = UC([1 2 3 4], 2, 'y');        %vector values, scalar error
+z = UC(15, 10, 'z');              %scalar value, scalar error
+s = 4.5;                          %a normal scalar (not a UC)
+
+fprintf('Testing basic math and vector operations\n');
+c = x + z;
+d = x - z;
+e = x * z;
+f = x / z;
+g = x .^ z;
+h = z .^ x;
+j = x ^ 2;
+xpy = x + z;
+xps = x + s;
+
+fprintf('Testing error propogation through several operations\n');
+v1 = sqrt(x + z);
+v2 = exp(z);
+v3 = (v1 * v2)^2;
+fprintf('  v1(1) = %s\n',v1(1).Name)
+fprintf('  v2 = %s\n',v2.Name)
+fprintf('  v3(1) = %s\n',v3(1).Name)
+
+% Test various overloaded functions
+fprintf('Testing overloaded functions\n')
+ex=exp(x);
+sx=sin(x);
+sy=sin(y);
+cx=cos(x);
+cy=cos(y);
+sqrx=sqrt(abs(x));
+sqry=sqrt(y);
+maxx=max(x);
+maxy=max(y);
+minx=min(x);
+miny=min(y);
+sumx=sum(x);
+sumy=sum(y);
+meanx=mean(x);
+meany=mean(y);
+
+% floor and ceil return normal numbers, not UC values
+ceilx=ceil(x);
+ceily=ceil(y);
+floorx=floor(x);
+floory=floor(y);
+
+return
+
+% Make a linear projection using UC vectors
+fprintf('Testing linear projection\n')
+x = UC(0:1:10, rand(1,11));
+y = UC(3.*[x.Value] + 2 + 3.*rand(1,11), 3.*[x.Err] + 5.*rand(1,11));
+
+xp = 12;  %This can be a normal number, or a UC value
+%xp = UC(12,2); also works
+yp = linear_projection(x,y,xp);
+
+fprintf('Testing plotting\n')
+% Plot the UC vectors
+figure;
+hold all
+hD = plot(x,y);
+hP = plot(xp,yp);
+set(hD,'MarkerFaceColor',[0.5 0.5 0.5]);
+set(hP,'Marker','s','MarkerSize',9,'MarkerFaceColor','r');
+
+
+% An example using correlated uncertainties
+% P1 and P2 are from the same instrument, so they are highly correlated
+% with Rc = 0.99
+%
+% How do we find delta_P at time 'td'?
+%
+
+eP = 2;
+t1 = 0:0.05:10;
+t2 = 12:0.05:22;
+
+P1 = UC(10 + 0.5*randn(size(t1)), eP, 'PT_01');
+P2 = UC(8 + 0.5*randn(size(t2)),  eP, 'PT_01');
+td = 11;
+
+[Pi,mi,bi] = linear_projection(t1,P1,td);
+[Pf,mf,bf] = linear_projection(t2,P2,td);
+Pi %#ok<*NOPTS>
+Pf
+
+figure;
+hold all
+plot(t1,P1);
+plot(t2,P2);
+
+
+
+plot([0 td+1],mi.Value.*[0 td+1]+bi.Value,'--r','LineWidth',1.5);
+plot([td-1 22],mf.Value.*[td-1 22]+bf.Value,'--r','LineWidth',1.5);
+
+hi = plot(td,Pi);
+hf = plot(td,Pf);
+set([hi hf],'MarkerFaceColor','r');
+xlim([0 22])
+axis equal

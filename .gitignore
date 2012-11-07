@@ -1,2 +1,5 @@
 # MATLAB Autosave files
 *.asv
+
+# Ignore text backup files
+*~
