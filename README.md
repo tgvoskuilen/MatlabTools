@@ -7,7 +7,7 @@ commands at a UNIX shell (check that you have `git` installed first by typing
 `which git`):
 
     cd ~/Personal/MATLAB
-    git clone git@github.com:tgvoskuilen/MatlabTools.git
+    git clone git://github.com/tgvoskuilen/MatlabTools.git
     
 To update your versions of the code if you have already cloned the repository:
 
