@@ -45,11 +45,11 @@
 %
 % 3. Access fluid properties using the Fluid class methods:
 %
-%     density = H2.Density({10,'bar'},{280,'K'},'g_L');
+%     rho = H2.Density({10,'bar'},{280,'K'},'g_L');
 %
 %    or more simply (using the default units of bar, K, and g/L):
 %
-%     density = H2.Density(10,280);
+%     rho = H2.Density(10,280);
 %
 %    Other properties are accessed similarly:
 %      f = H2.Fugacity({10,'bar'},{280,'K'},'bar');
