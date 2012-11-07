@@ -1,6 +1,6 @@
 classdef Fluid
-    %Class for fluid properties based on NIST data.
-    %
+    % Class for fluid properties based on NIST data.
+
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 
@@ -26,7 +26,8 @@ classdef Fluid
     % LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    %
+
+
     % This class relies on NIST data saved in the @Fluid folder. Currently 
     % supported fluids are:
     %   Hydrogen (H2)
@@ -35,7 +36,8 @@ classdef Fluid
     %   Methane  (CH4)
     %
     % More fluids can be added by modifying GetNISTData below
-    %
+
+
     %-------------------------------------------------------------------------
     % Usage Instructions:
     %-------------------------------------------------------------------------
