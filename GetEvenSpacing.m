@@ -44,7 +44,7 @@
 % For example, if 'time' and 'F' are dense vectors of the 
 % same length, you can subdivide them into 50 points with:
 %
-%   r = GetNiceSpacing(time, F, 50);
+%   r = GetEvenSpacing(time, F, 50);
 %   plot(time,F,'-r');
 %   hold on;
 %   plot(time(r), F(r), 'ok');

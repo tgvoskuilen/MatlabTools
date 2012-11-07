@@ -47,7 +47,12 @@ the data for plotting markers that are visible. If your data is not evenly
 spaced, or is plotted on a log scale, this can become more difficult.
 
 This function gets evenly spaced down-sampled points with the option of
-specifying log or linear plotting scales.
+specifying log or linear plotting scales. For example:
+
+    r = GetEvenSpacing(x, y, 50);
+    plot(x, y, '-r');
+    hold on;
+    plot(x(r), y(r), 'ok');
 
 ### errorbars_xy
 
