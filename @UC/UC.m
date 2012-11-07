@@ -90,7 +90,8 @@ classdef UC
                             uc(i,j).Name = num2str(val(i,j));
                         else
                             if m*n > 1
-                                uc(i,j).Name=strcat(name,'(',num2str(i*j),')');
+                                uc(i,j).Name=strcat(name,'(',num2str(i),...
+                                                    ',',num2str(j),')');
                             else
                                 uc(i,j).Name=name;
                             end

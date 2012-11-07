@@ -260,18 +260,22 @@ classdef Fluid
             %  compressibility (-), density (g/ml)
             filename = strcat('NIST_',Gas(GasID).Name,'_Props.mat');
             save(filename,'T','P','f','Z','rho')
+            
+            fluidPath = fileparts(which('Fluid'));
+            movefile(filename,strcat(fluidPath,filesep,filename));
+            
             rmdir(Gas(GasID).Name,'s')
             waitbar(1,hWait);
             close(hWait);
 
-            %End with a message box
-            msgbox(strcat(Gas(GasID).Name,' property data download complete'),...
-                'Complete');
-        
+            fprintf('%s property data download complete.\n', ...
+                    Gas(GasID).Name);
         end
     
         function fluid_list = GetAvailableFluids()
-            propfiles = dir('*_Props.mat');
+            
+            fluidPath = fileparts(which('Fluid'));
+            propfiles = dir(strcat(fluidPath,filesep,'*_Props.mat'));
             fluid_list = cell(1,length(propfiles));
             for i = 1:length(propfiles)
                 C = textscan(propfiles(i).name,'%s','delimiter','_');
@@ -329,7 +333,7 @@ classdef Fluid
                 end
             end
         end
-        
+                
         function [rho, drho_dP, drho_dT] = Density(obj, P, T, rhoUnit)
             %P and T can be either scalars, vectors, or a cell with the
             %first entity a scaler or vector and the second entity a unit
