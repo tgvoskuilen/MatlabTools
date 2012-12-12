@@ -141,14 +141,15 @@ e_yp_vals = b_e;
 % TOTAL UNCERTAINTY ======================================================
 yp_e = sqrt(e_yp_stat^2 + e_yp_vals^2);
 
-yp = UC(yp_v, yp_e);
+yp = UC(yp_v, yp_e,'projected');
 
 %Here y = m*(x-xp) + b
-m = UC(m_v, m_e);
-b = UC(b_v, b_e);
+m = UC(m_v, m_e, 'm');
+bt = UC(b_v, b_e);
 
 %Translate b back into the non-shifted coordinate system
 % so y = m*x + b
-b = b - m*xp;
+bt = bt - m*xp;
+b = UC([bt.Value],[bt.Err],'b');
 
 

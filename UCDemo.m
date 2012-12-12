@@ -88,25 +88,27 @@ ceily=ceil(y);
 floorx=floor(x);
 floory=floor(y);
 
-return
 
 % Make a linear projection using UC vectors
-fprintf('Testing linear projection\n')
-x = UC(0:1:10, rand(1,11));
-y = UC(3.*[x.Value] + 2 + 3.*rand(1,11), 3.*[x.Err] + 5.*rand(1,11));
+fprintf('Testing linear projection and polyfit\n')
+x = UC(0:1:10, rand(1,11), 'x');
+y = UC(3.*[x.Value] + 2 + 3.*rand(1,11), 3.*[x.Err] + 5.*rand(1,11), 'y');
 
 xp = 12;  %This can be a normal number, or a UC value
-%xp = UC(12,2); also works
+%xp = UC(12,2,'xp'); also works
 yp = linear_projection(x,y,xp);
+p = polyfit(x,y,1);
+fprintf('  Slope (%s) = %f +/- %f\n',p(1).Name,p(1).Value,p(1).Err);
+fprintf('  Intercept (%s) = %f +/- %f\n',p(2).Name,p(2).Value,p(2).Err);
 
-fprintf('Testing plotting\n')
+%fprintf('Testing plotting\n')
 % Plot the UC vectors
-figure;
-hold all
-hD = plot(x,y);
-hP = plot(xp,yp);
-set(hD,'MarkerFaceColor',[0.5 0.5 0.5]);
-set(hP,'Marker','s','MarkerSize',9,'MarkerFaceColor','r');
+%figure;
+%hold all
+%hD = plot(x,y);
+%hP = plot(xp,yp);
+%set(hD,'MarkerFaceColor',[0.5 0.5 0.5]);
+%set(hP,'Marker','s','MarkerSize',9,'MarkerFaceColor','r');
 
 
 % An example using correlated uncertainties
@@ -116,18 +118,21 @@ set(hP,'Marker','s','MarkerSize',9,'MarkerFaceColor','r');
 % How do we find delta_P at time 'td'?
 %
 
+fprintf('Testing uncertainty correlation\n');
 eP = 2;
 t1 = 0:0.05:10;
 t2 = 12:0.05:22;
 
 P1 = UC(10 + 0.5*randn(size(t1)), eP, 'PT_01');
-P2 = UC(8 + 0.5*randn(size(t2)),  eP, 'PT_01');
+P2 = UC(8 + 0.5*randn(size(t2)),  eP, 'PT_01', P1(1).Hash);
 td = 11;
 
 [Pi,mi,bi] = linear_projection(t1,P1,td);
 [Pf,mf,bf] = linear_projection(t2,P2,td);
-Pi %#ok<*NOPTS>
-Pf
+dP = Pi - Pf;
+disp(dP);
+
+return
 
 figure;
 hold all
