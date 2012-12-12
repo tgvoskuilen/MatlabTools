@@ -73,13 +73,13 @@ function range = GetEvenSpacing(x, y, N, x_mode, y_mode)
     if strcmp(x_mode,'Log') || strcmp(x_mode,'log')
         xs0 = log(x ./ (max(x) - min(x)));
     else
-        xs0 = x ./ (max(x) - min(x));
+        xs0 = (x - min(x)) ./ (max(x) - min(x));
     end
     
     if strcmp(y_mode,'Log') || strcmp(y_mode,'log')
         ys0 = log(y ./ (max(y) - min(y)));
     else
-        ys0 = y ./ (max(y) - min(y));
+        ys0 = (y - min(y)) ./ (max(y) - min(y));
     end
     
     %Make a coarse spline of the line to find its real, non-noisy length
