@@ -33,7 +33,6 @@ clear all
 close all
 clc
 
-clear all
 % This script tests all the overloaded functions and methods in UC
 % Giving a name to a UC is not required, but is recommended. The name
 % will be carried through calculations so you can see its effect on later

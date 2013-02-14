@@ -6,9 +6,9 @@ function [hData, hBarX, hBarY] = errorbars_xy(ax,x,y,e_x,e_y,span_x,span_y,varar
 %    x - A vector of x data points
 %    y - A vector of y data points
 %    e_x - A vector or scalar value of uncertainty in the x data points
-%       (set to [] or 0 for no X-error bars, if an entry of e_x is zero that
-%        bar will not be plotted. You can use this to plot only the last
-%        error bar by entering [0 0 ... 0 e]. The same applies to e_y)
+%       (set to [] or 0 for no X-error bars, if an entry of e_x is zero
+%        that bar will not be plotted. You can use this to plot only the
+%        last error bar by entering [0 0 ... 0 e]. The same applies to e_y)
 %    e_y - A vector or scalar value of uncertainty in the y data points
 %       (set to [] or 0 for no Y-error bars)
 %    span_x - A scalar or vector of the height (vertical) of the hats on the X error bars

@@ -39,7 +39,8 @@
 %                       resulting x range for log plotting
 %   y_mode (optional) - Either 'Log' or 'Linear' (default) to scale the
 %                       resulting y range for log plotting
-%
+%   x_range (optional)- Length to scale 'x' over (defaults to min/max)
+%   y_range (optional)- Length to scale 'y' over (defaults to min/max)
 %
 % For example, if 'time' and 'F' are dense vectors of the 
 % same length, you can subdivide them into 50 points with:
@@ -52,7 +53,7 @@
 % so their markers are visible over the existing data
 %
 %------------------------------------------------------------------------------
-function range = GetEvenSpacing(x, y, N, x_mode, y_mode)
+function range = GetEvenSpacing(x, y, N, x_mode, y_mode, x_range, y_range)
 
     % No "up-sampling" considered
     if N > length(x)
@@ -69,21 +70,30 @@ function range = GetEvenSpacing(x, y, N, x_mode, y_mode)
         y_mode = 'Linear';
     end
     
+    %Set x and y plot ranges
+    if ~exist('x_range','var')
+        x_range = [min(x) max(x)];
+    end
+    
+    if ~exist('y_range','var')
+        y_range = [min(y) max(y)];
+    end
+    
     % Make xs0 and ys0 that vary over the same order of magnitude
     if strcmp(x_mode,'Log') || strcmp(x_mode,'log')
-        xs0 = log(x ./ (max(x) - min(x)));
+        xs0 = log((x - x_range(1)) ./ (x_range(2) - x_range(1)));
     else
-        xs0 = (x - min(x)) ./ (max(x) - min(x));
+        xs0 = (x - x_range(1)) ./ (x_range(2) - x_range(1));
     end
     
     if strcmp(y_mode,'Log') || strcmp(y_mode,'log')
-        ys0 = log(y ./ (max(y) - min(y)));
+        ys0 = log((y - y_range(1)) ./ (y_range(2) - y_range(1)));
     else
-        ys0 = (y - min(y)) ./ (max(y) - min(y));
+        ys0 = (y - y_range(1)) ./ (y_range(2) - y_range(1));
     end
     
     %Make a coarse spline of the line to find its real, non-noisy length
-    spl = 1:floor(length(xs0)/20):length(xs0);
+    spl = 1:floor(length(xs0)/50):length(xs0);
     xss0 = xs0(spl);
     yss0 = spline(xs0,ys0,xss0);
     
