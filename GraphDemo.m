@@ -129,7 +129,7 @@ set(hFig1,'Name','Normal Scale'); %Helpful to set a name if you have a lot of pl
 hold on
     
 %Plot the data and get handles for each plotted item
-% - If you need error bars, you can use the 'errorbar_xy' function.
+% - If you need error bars, you can use the 'errorbar' function.
 % - If not, you can just use 'plot'
 hTheory  = plot(theory.width, theory.accel);
 hJenkins = plot(jenkins.width, jenkins.accel);
@@ -269,7 +269,7 @@ end
 
 
 
-%==========================================================================
+%% ========================================================================
 % Now lets plot the same data on a log scale
 %  Because we associated the plot parameters with the data being plotted
 %  using structures, the second plot is consistent with the first plot.
@@ -372,7 +372,7 @@ end
 
 
 
-%==========================================================================
+%% ========================================================================
 % Now we'll plot it again on a log scale, but with more of 
 %  matlab's awful default settings for comparison
 %==========================================================================
