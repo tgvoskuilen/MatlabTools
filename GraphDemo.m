@@ -40,15 +40,7 @@ clear all
 close all
 clc
 
-%==========================================================================
-% Dependancies
-%==========================================================================
-% Running this script requires the following custom Matlab functions:
-%   errorbars_xy
-%   
-%
-
-%==========================================================================
+%% ========================================================================
 % Plot parameters
 %==========================================================================
 
@@ -90,7 +82,7 @@ else
 end
 
 
-%==========================================================================
+%% ========================================================================
 % Make up some pseudo-data to plot
 %==========================================================================
 
@@ -124,7 +116,7 @@ jenkins.marker = 's';
 jenkins.color = colors{2};
 
 
-%==========================================================================
+%% ========================================================================
 % Now for the actual plot creation
 %==========================================================================
 
@@ -141,8 +133,7 @@ hold on
 % - If not, you can just use 'plot'
 hTheory  = plot(theory.width, theory.accel);
 hJenkins = plot(jenkins.width, jenkins.accel);
-[hMeas, ~, hErrY] = errorbars_xy(gca, meas.width, meas.accel, [], ...
-     meas.e_accel, 0, 0.075);
+hMeas    = errorbar(meas.width, meas.accel, meas.e_accel);
 
 
 %Set the display properties for each data series plotted on the graph
@@ -150,7 +141,22 @@ hJenkins = plot(jenkins.width, jenkins.accel);
 % - Use formatting flags or data structure attributes to set the 
 %    other major properties
 
-set(hErrY,'Color',[0.3 0.3 0.3]);
+%set(hErrY,'Color',[0.3 0.3 0.3]);
+
+% Format the default error bar hat size and color
+hMeasChildren = get(hMeas,'Children');
+errorbarHats = get(hMeasChildren(2),'XData');
+
+errorbarHats(4:9:end) = ...
+    errorbarHats(1:9:end) - 0.08;
+errorbarHats(7:9:end) = ....
+    errorbarHats(1:9:end) - 0.08;
+errorbarHats(5:9:end) = ...
+    errorbarHats(1:9:end) + 0.08;
+errorbarHats(8:9:end) = ...
+    errorbarHats(1:9:end) + 0.08;
+
+set(hMeasChildren(2), 'XData', errorbarHats, 'Color', [0.3 0.3 0.3]);
 
 set(hMeas,...
     'DisplayName',meas.name,... 
@@ -279,10 +285,23 @@ set(hFig2,'Name','Log Scale');
 hTheory  = semilogy(theory.width, theory.accel);
 hold on
 hJenkins = plot(jenkins.width, jenkins.accel);
-[hMeas, ~, hErrY] = errorbars_xy(gca, meas.width, meas.accel, ...
-    [], meas.e_accel, 0, 0.075);
+hMeas = errorbar(meas.width, meas.accel, meas.e_accel);
 
 %Set properties for each data series plotted on the graph
+hMeasChildren = get(hMeas,'Children');
+errorbarHats = get(hMeasChildren(2),'XData');
+
+errorbarHats(4:9:end) = ...
+    errorbarHats(1:9:end) - 0.08;
+errorbarHats(7:9:end) = ....
+    errorbarHats(1:9:end) - 0.08;
+errorbarHats(5:9:end) = ...
+    errorbarHats(1:9:end) + 0.08;
+errorbarHats(8:9:end) = ...
+    errorbarHats(1:9:end) + 0.08;
+
+set(hMeasChildren(2), 'XData', errorbarHats, 'Color', [0.3 0.3 0.3]);
+
 set(hMeas,...
     'DisplayName',meas.name,... 
     'LineStyle','none',...          No line between points
@@ -291,8 +310,6 @@ set(hMeas,...
     'MarkerSize',DataMarkerSize,... Data marker size
     'MarkerEdgeColor','k',...       Data marker edge color
     'MarkerFaceColor',meas.color); %Data marker face color
-
-set(hErrY,'Color',[0.3 0.3 0.3]);
 
 set(hJenkins,...
     'DisplayName',jenkins.name,...  
@@ -368,8 +385,7 @@ set(hFig3,'Name','Log Scale Poor Quality');
 hTheory  = semilogy(theory.width, theory.accel);
 hold on
 hJenkins = plot(jenkins.width, jenkins.accel);
-hMeas = errorbars_xy(gca, meas.width, meas.accel, ...
-    [], meas.e_accel, 0, 0.075);
+hMeas = errorbar(meas.width, meas.accel, meas.e_accel);
 
 %Set properties for each data series plotted on the graph
 set(hMeas,'DisplayName',meas.name);

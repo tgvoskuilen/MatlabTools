@@ -89,26 +89,35 @@ floory=floor(y);
 
 
 % Make a linear projection using UC vectors
+% x and y are some vectors with random uncertainty, and we want to find
+% the slope m and intercept b of y = m*x+b to project y to a give
+% projection point 'xp'
 fprintf('Testing linear projection and polyfit\n')
 x = UC(0:1:10, rand(1,11), 'x');
 y = UC(3.*[x.Value] + 2 + 3.*rand(1,11), 3.*[x.Err] + 5.*rand(1,11), 'y');
 
+
 xp = 12;  %This can be a normal number, or a UC value
 %xp = UC(12,2,'xp'); also works
 yp = linear_projection(x,y,xp);
-p = polyfit(x,y,1);
+p = polyfit(x,y,1); %this calls the special 'polyfit' in the @UC folder
+
+% NOTE: yp above is the same value as p(1)*xp + p(2) but not the same
+% uncertainty. The linear projection routine assumes the point sets are
+% self correlated when doing the projection, while p(1)*xp+p(2) does not.
+% Therefore, the uncertainty using linear_projection is typically lower.
+
 fprintf('  Slope (%s) = %f +/- %f\n',p(1).Name,p(1).Value,p(1).Err);
 fprintf('  Intercept (%s) = %f +/- %f\n',p(2).Name,p(2).Value,p(2).Err);
 
-%fprintf('Testing plotting\n')
+fprintf('Testing plotting\n')
 % Plot the UC vectors
-%figure;
-%hold all
-%hD = plot(x,y);
-%hP = plot(xp,yp);
-%set(hD,'MarkerFaceColor',[0.5 0.5 0.5]);
-%set(hP,'Marker','s','MarkerSize',9,'MarkerFaceColor','r');
-
+figure;
+hold all
+hD = plot(x,y);
+hP = plot(xp,yp);
+set(hD,'MarkerFaceColor',[0.5 0.5 0.5]);
+set(hP,'Marker','s','MarkerSize',9,'MarkerFaceColor','r');
 
 % An example using correlated uncertainties
 % P1 and P2 are from the same instrument, so they are highly correlated
@@ -129,16 +138,12 @@ td = 11;
 [Pi,mi,bi] = linear_projection(t1,P1,td);
 [Pf,mf,bf] = linear_projection(t2,P2,td);
 dP = Pi - Pf;
-disp(dP);
 
-return
 
 figure;
 hold all
 plot(t1,P1);
 plot(t2,P2);
-
-
 
 plot([0 td+1],mi.Value.*[0 td+1]+bi.Value,'--r','LineWidth',1.5);
 plot([td-1 22],mf.Value.*[td-1 22]+bf.Value,'--r','LineWidth',1.5);
