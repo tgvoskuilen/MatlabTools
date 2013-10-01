@@ -133,7 +133,7 @@ dmdx = (h.*fp - hp.*f)./h.^2;
 
 % Uncertainty in m and b
 m_e = sqrt(sum((dmdy.*[y.Err]).^2) + sum((dmdx.*[x.Err]).^2));
-b_e = sqrt(sum((dbdy.*[y.Err]).^2) + sum((dbdx.*[x.Err]).^2));
+%b_e = sqrt(sum((dbdy.*[y.Err]).^2) + sum((dbdx.*[x.Err]).^2));
 
 % Uncertainty in yp
 e_yp_vals = b_e;
