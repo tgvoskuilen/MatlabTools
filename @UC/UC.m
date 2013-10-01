@@ -346,6 +346,12 @@ classdef UC
         end
         
         %------------------------------------------------------------------
+        function neg = uminus(a)
+            neg = a;
+            neg.Value = -neg.Value;
+        end
+        
+        %------------------------------------------------------------------
         function bool = eq(a, b)
             if ~strcmp(class(a),'UC')
                 a = UC(a);

@@ -1,6 +1,6 @@
 % Figure creation demo/template for MATLAB
 %
-%------------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Copyright (c) 2012, Tyler Voskuilen
 % All rights reserved.
 % 
@@ -27,7 +27,7 @@
 % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-%------------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %
 % This script generates some pseudo-data, then makes two journal-quality
 % plots of the generated data. It can be used as a template or guide for
@@ -96,15 +96,15 @@ end
 %    boldface, and many more 'fancy' looks
 
 %Measurements
-meas.width = transpose(1:0.5:5);
-meas.accel = exp(meas.width) + 8.*rand(length(meas.width),1) + 10;
-meas.e_accel = 8 .* ones(length(meas.width),1);
+meas.width = (1:0.5:5)';
+meas.accel = exp(meas.width) + 8.*rand(size(meas.width)) + 10;
+meas.e_accel = 8 .* ones(size(meas.width));
 meas.name = 'Measurement (\mu \pm \sigma)';
 meas.marker = 'o';
 meas.color = colors{1};
 
 %Theory
-theory.width = transpose(0:0.005:5);
+theory.width = (0:0.005:5)';
 theory.accel = exp(theory.width) + 10;
 theory.name = 'Theory';
 
@@ -141,20 +141,14 @@ hMeas    = errorbar(meas.width, meas.accel, meas.e_accel);
 % - Use formatting flags or data structure attributes to set the 
 %    other major properties
 
-%set(hErrY,'Color',[0.3 0.3 0.3]);
-
-% Format the default error bar hat size and color
+% Format the error bar hat size and color
 hMeasChildren = get(hMeas,'Children');
 errorbarHats = get(hMeasChildren(2),'XData');
 
-errorbarHats(4:9:end) = ...
-    errorbarHats(1:9:end) - 0.08;
-errorbarHats(7:9:end) = ....
-    errorbarHats(1:9:end) - 0.08;
-errorbarHats(5:9:end) = ...
-    errorbarHats(1:9:end) + 0.08;
-errorbarHats(8:9:end) = ...
-    errorbarHats(1:9:end) + 0.08;
+errorbarHats(4:9:end) = errorbarHats(1:9:end) - 0.08;
+errorbarHats(7:9:end) = errorbarHats(1:9:end) - 0.08;
+errorbarHats(5:9:end) = errorbarHats(1:9:end) + 0.08;
+errorbarHats(8:9:end) = errorbarHats(1:9:end) + 0.08;
 
 set(hMeasChildren(2), 'XData', errorbarHats, 'Color', [0.3 0.3 0.3]);
 
@@ -291,14 +285,10 @@ hMeas = errorbar(meas.width, meas.accel, meas.e_accel);
 hMeasChildren = get(hMeas,'Children');
 errorbarHats = get(hMeasChildren(2),'XData');
 
-errorbarHats(4:9:end) = ...
-    errorbarHats(1:9:end) - 0.08;
-errorbarHats(7:9:end) = ....
-    errorbarHats(1:9:end) - 0.08;
-errorbarHats(5:9:end) = ...
-    errorbarHats(1:9:end) + 0.08;
-errorbarHats(8:9:end) = ...
-    errorbarHats(1:9:end) + 0.08;
+errorbarHats(4:9:end) = errorbarHats(1:9:end) - 0.08;
+errorbarHats(7:9:end) = errorbarHats(1:9:end) - 0.08;
+errorbarHats(5:9:end) = errorbarHats(1:9:end) + 0.08;
+errorbarHats(8:9:end) = errorbarHats(1:9:end) + 0.08;
 
 set(hMeasChildren(2), 'XData', errorbarHats, 'Color', [0.3 0.3 0.3]);
 
