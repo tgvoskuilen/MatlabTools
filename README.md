@@ -17,11 +17,10 @@ To update your versions of the code if you have already cloned the repository:
 To make this folder automatically on your Matlab path, add the following line
 to `startup.m` in your Matlab folder (create the file if it does not exist)
 
-    u = userpath;
-    addpath(strcat(u(1:end-1),filesep,'MatlabTools'));
+    addpath(fullfile(fileparts(userpath),'MATLAB','MatlabTools'));
 
 You can also clone the repo using Git for Windows, but the above instructions
-for `startup.m` will be different.
+for `startup.m` may be different depending on where you save the files.
 
 Classes
 --------------------------
