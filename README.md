@@ -20,7 +20,7 @@ to `startup.m` in your Matlab folder (create the file if it does not exist)
     addpath(fullfile(fileparts(userpath),'MATLAB','MatlabTools'));
 
 You can also clone the repo using Git for Windows, but the above instructions
-for `startup.m` will be different.
+for `startup.m` may be different depending on where you save the files.
 
 Classes
 --------------------------
