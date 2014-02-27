@@ -1,4 +1,6 @@
 function y = exp(x)
+    % Exponential function
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 
@@ -28,10 +30,9 @@ function y = exp(x)
     e = UC(exp(1),0,'e');
     y = e .^ x;
     
-    %remove 'e' from contrib and frac lists
+    %remove 'e' from contributions to error
     for i = 1:length(y)
-        keep = ~strcmpi(y(i).Contrib,'e');
-        y(i).Contrib = y(i).Contrib(keep);
-        y(i).Frac = y(i).Frac(keep);
+        keep = ~strcmpi(y(i).Contrib(1,:),'e');
+        y(i).Contrib = y(i).Contrib(:,keep);
         y(i).Name = strcat('exp(',x(i).Name,')');
     end

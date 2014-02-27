@@ -1,4 +1,6 @@
 function y = cos(x)
+    % Cosine function
+
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

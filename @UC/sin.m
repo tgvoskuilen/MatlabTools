@@ -1,4 +1,6 @@
 function y = sin(x)
+    % Sine function
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

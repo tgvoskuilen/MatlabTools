@@ -1,4 +1,6 @@
 function i = ceil(x)
+    % Ceil (round up)
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

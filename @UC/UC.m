@@ -1,6 +1,23 @@
 classdef UC
     % This class is for handling values with an associated uncertainty
-
+    %
+    % It is designed to be a "stand-in" replacement for numeric data in
+    % Matlab that carries an uncertainty value through your operations
+    % by overloading basic math operations like addition, subtraction,
+    % etc...
+    %
+    % For example, to create two UC variables, you could do
+    %
+    %   x = UC(1,3,'x');  % value is 1, uncertainty is 3, name is 'x'
+    %   y = UC(10,1,'y'); % value is 10, uncertainty is 1, name is 'y'
+    %
+    % You can then use x and y as you would normal Matlab variables, so
+    %
+    %   z = x + y;
+    %   w = z^(x+y);
+    %
+    % would propogate the original uncertainty through to z and w.
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 
@@ -30,15 +47,55 @@ classdef UC
 
     %----------------------------------------------------------------------
     properties (SetAccess = protected) %You may not change these
-        Name = '';
-        Value = 0;  %Value
-        Err = 0;    %Bias error
-        Err_r = 0;  %Random error
-        Hash = -1;  %Hash value
-        Contrib = {}; %List of contributors to this variable
-        Frac = []; %Fractional error controbutions from contributors
+        Name = '';  % Variable name
+        Value = 0;  % Value
+        Err = 0;    % Value uncertainty
+        Contrib = {}; % List of contributors to this variable
+        Hash = -1;  % Hash value (unique ID number for this set of data)
     end
     
+    %----------------------------------------------------------------------
+    properties (Access = private)
+        Err_r = 0;  % Random error (currently not used)
+    end
+    
+    %----------------------------------------------------------------------
+    methods (Access = private)
+        function y = AssignContrib(obj, A, B, fA, fB, opString)
+            % Determine the fractional contribution to uncertainty from separate inputs
+            
+            y = obj;
+                       
+            for i = 1:length(y)
+                % Technically the '^' operator doesn't need (), but it's
+                % more clear that way about order of operations
+                y(i).Name = strcat('(',A(i).Name,opString,B(i).Name,')');
+                
+                if fA(i) == 0 && fB(i) ~= 0
+                    y(i).Contrib = B(i).Contrib;
+                elseif fB(i) == 0 && fA(i) ~= 0
+                    y(i).Contrib = A(i).Contrib;
+                else
+                    fyFull = [cell2mat(A(i).Contrib(2,:)).*fA(i) ...
+                              cell2mat(B(i).Contrib(2,:)).*fB(i)];
+                    yContribFull = [A(i).Contrib(1,:) B(i).Contrib(1,:)];
+                    
+                    y(i).Contrib = {};
+                    Nc = length(unique(yContribFull));
+                    y(i).Contrib(1,:) = unique(yContribFull);
+                    y(i).Contrib(2,:) = num2cell(zeros(1,Nc));
+
+                    for j = 1:Nc
+                        y(i).Contrib{2,j} = ...
+                            sum(fyFull(strcmpi(yContribFull,y(i).Contrib{1,j})));
+                    end
+                end
+            end
+        end 
+        
+    end
+    
+    %----------------------------------------------------------------------
     %Define class methods
     methods
         %------------------------------------------------------------------
@@ -96,54 +153,22 @@ classdef UC
                                 uc(i,j).Name=name;
                             end
                         end
-                        uc(i,j).Contrib = {uc(i,j).Name};
-                        uc(i,j).Frac = 1;
+                        uc(i,j).Contrib = {uc(i,j).Name; 1};
                     end
                 end
             end
         end
-        
-        
-        function y = AssignContrib(obj, A, B, fA, fB, opString)
-            
-            y = obj;
-                       
-            for i = 1:length(y)
-                % Technically the '^' operator doesn't need (), but it's
-                % more clear that way about order of operations
-                y(i).Name = strcat('(',A(i).Name,opString,B(i).Name,')');
-                
-                if fA(i) == 0 && fB(i) ~= 0
-                    y(i).Contrib = B(i).Contrib;
-                    y(i).Frac = B(i).Frac;
-                elseif fB(i) == 0 && fA(i) ~= 0
-                    y(i).Contrib = A(i).Contrib;
-                    y(i).Frac = A(i).Frac;
-                else
-                    fyFull = [[A(i).Frac].*fA(i) [B(i).Frac].*fB(i)];
-                    yContribFull = [A(i).Contrib B(i).Contrib];
-                    
-                    y(i).Contrib = unique(yContribFull);
-                    y(i).Frac = zeros(size(y(i).Contrib));
 
-                    for j = 1:length(y(i).Frac)
-                        y(i).Frac(j) = ...
-                            sum(fyFull(strcmpi(yContribFull,y(i).Contrib{j})));
-                    end
-                end
-            end
-            
-            
-        end
-        
         %------------------------------------------------------------------
         % Operator overloading
         %------------------------------------------------------------------
         function y = plus(A, B)
-            if ~strcmp(class(A),'UC')
+            % Addition operator
+            
+            if ~isa(A,'UC')
                 A = UC(A);
             end
-            if ~strcmp(class(B),'UC')
+            if ~isa(B,'UC')
                 B = UC(B);
             end
             
@@ -157,11 +182,13 @@ classdef UC
             
             % Make A and B vectors of the same length
             if length(A) == 1 && length(B) > 1
-                A(size(B)) = A;
+                sb = size(B);
+                A(1:sb(1),1:sb(2)) = A;
             end
 
             if length(B) == 1 && length(A) > 1
-                B(size(A)) = B;
+                sa = size(A);
+                B(1:sa(1),1:sa(2)) = B;
             end
 
             % Loop through elements of y and assign contrib to each
@@ -175,10 +202,12 @@ classdef UC
         
         %------------------------------------------------------------------
         function y = minus(A, B)
-            if ~strcmp(class(A),'UC')
+            % Subtraction operator
+            
+            if ~isa(A,'UC')
                 A = UC(A);
             end
-            if ~strcmp(class(B),'UC')
+            if ~isa(B,'UC')
                 B = UC(B);
             end
 
@@ -192,11 +221,13 @@ classdef UC
             
             % Make A and B vectors of the same length
             if length(A) == 1 && length(B) > 1
-                A(size(B)) = A;
+                sb = size(B);
+                A(1:sb(1),1:sb(2)) = A;
             end
 
             if length(B) == 1 && length(A) > 1
-                B(size(A)) = B;
+                sa = size(A);
+                B(1:sa(1),1:sa(2)) = B;
             end
 
             % Loop through elements of y and assign contrib to each
@@ -211,10 +242,12 @@ classdef UC
         
         %------------------------------------------------------------------
         function y = times(A, B)
-            if ~strcmp(class(A),'UC')
+            % Multiplcation operator
+            
+            if ~isa(A,'UC')
                 A = UC(A);
             end
-            if ~strcmp(class(B),'UC')
+            if ~isa(B,'UC')
                 B = UC(B);
             end
       
@@ -230,11 +263,13 @@ classdef UC
             
             % Make A and B vectors of the same length
             if length(A) == 1 && length(B) > 1
-                A(size(B)) = A;
+                sb = size(B);
+                A(1:sb(1),1:sb(2)) = A;
             end
 
             if length(B) == 1 && length(A) > 1
-                B(size(A)) = B;
+                sa = size(A);
+                B(1:sa(1),1:sa(2)) = B;
             end
 
             % Loop through elements of y and assign contrib to each
@@ -244,15 +279,16 @@ classdef UC
             %fB(isnan(fB)) = 0;
             
             y = AssignContrib(y, A, B, fA, fB, '*');
-
         end
         
         %------------------------------------------------------------------
         function y = rdivide(A, B)
-            if ~strcmp(class(A),'UC')
+            % Division operator
+            
+            if ~isa(A,'UC')
                 A = UC(A);
             end
-            if ~strcmp(class(B),'UC')
+            if ~isa(B,'UC')
                 B = UC(B);
             end
                           
@@ -268,11 +304,13 @@ classdef UC
             
             % Make A and B vectors of the same length
             if length(A) == 1 && length(B) > 1
-                A(size(B)) = A;
+                sb = size(B);
+                A(1:sb(1),1:sb(2)) = A;
             end
 
             if length(B) == 1 && length(A) > 1
-                B(size(A)) = B;
+                sa = size(A);
+                B(1:sa(1),1:sa(2)) = B;
             end
 
             % Loop through elements of y and assign contrib to each
@@ -287,10 +325,12 @@ classdef UC
         
         %------------------------------------------------------------------
         function y = power(A, B)
-            if ~strcmp(class(A),'UC')
+            % Power operator
+            
+            if ~isa(A,'UC')
                 A = UC(A);
             end
-            if ~strcmp(class(B),'UC')
+            if ~isa(B,'UC')
                 B = UC(B);
             end
             
@@ -307,11 +347,13 @@ classdef UC
             
             % Make A and B vectors of the same length
             if length(A) == 1 && length(B) > 1
-                A(size(B)) = A;
+                sb = size(B);
+                A(1:sb(1),1:sb(2)) = A;
             end
 
             if length(B) == 1 && length(A) > 1
-                B(size(A)) = B;
+                sa = size(A);
+                B(1:sa(1),1:sa(2)) = B;
             end
 
             % Loop through elements of y and assign contrib to each
@@ -324,81 +366,93 @@ classdef UC
         end
        
         %------------------------------------------------------------------
-        function bool = lt(a, b)
-            if ~strcmp(class(a),'UC')
-                a = UC(a);
+        function bool = lt(A, B)
+            % Less than operator
+            if ~isa(A,'UC')
+                A = UC(A);
             end
-            if ~strcmp(class(b),'UC')
-                b = UC(b);
+            if ~isa(B,'UC')
+                B = UC(B);
             end
-            bool = ([a.Value] < [b.Value]);
+            bool = ([A.Value] < [B.Value]);
         end
         
         %------------------------------------------------------------------
-        function bool = gt(a, b)
-            if ~strcmp(class(a),'UC')
-                a = UC(a);
+        function bool = gt(A, B)
+            % Greater than operator
+            if ~isa(A,'UC')
+                A = UC(A);
             end
-            if ~strcmp(class(b),'UC')
-                b = UC(b);
+            if ~isa(B,'UC')
+                B = UC(B);
             end
-            bool = ([a.Value] > [b.Value]);
+            bool = ([A.Value] > [B.Value]);
         end
         
         %------------------------------------------------------------------
-        function neg = uminus(a)
-            neg = a;
+        function neg = uminus(A)
+            % Negation operator
+            neg = A;
             neg.Value = -neg.Value;
         end
         
         %------------------------------------------------------------------
-        function bool = eq(a, b)
-            if ~strcmp(class(a),'UC')
-                a = UC(a);
+        function bool = eq(A, B)
+            % Equality operator - compares value only
+            if ~isa(A,'UC')
+                A = UC(A);
             end
-            if ~strcmp(class(b),'UC')
-                b = UC(b);
+            if ~isa(B,'UC')
+                B = UC(B);
             end
-            bool = ([a.Value] == [b.Value] & [a.Err] == [b.Err]);
+            bool = ([A.Value] == [B.Value]);
         end
         
         %------------------------------------------------------------------
         function bool = le(a, b)
+            % Less than or equal to operator
             bool = ~(a > b);
         end
         
         %------------------------------------------------------------------
         function bool = ge(a, b)
+            % Greater than or equal to operator
             bool = ~(a < b);
         end
         
         %------------------------------------------------------------------
         function bool = ne(a, b)
+            % Inequality operator
             bool = ~(a == b);
         end
         
         %------------------------------------------------------------------
         function y = mtimes(a, b)
+            % Vector component-wise multiplcation
             y = a .* b; %mtimes calls times (so * calls .*)
         end
         
         %------------------------------------------------------------------
         function y = mrdivide(a, b)
+            % Vector component-wise division
             y = a ./ b; %mrdivide calls rdivide (so / calls ./)
         end
         
         %------------------------------------------------------------------
         function y = mpower(a, b)
+            % Vector component-wise powers
             y = a .^ b; %mpower calls power (so ^ calls .^)
         end
         
         %------------------------------------------------------------------
         function display(a)
+            % Display the value and uncertainty
             disp([num2str([a.Value]),' ',char(177),' ',num2str([a.Err])]);
         end
         
         %-----------------------------------------------------------------
         function hash(a)
+            % Display the component hash
             disp([a.Hash]);
         end
         

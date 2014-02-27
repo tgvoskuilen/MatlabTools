@@ -1,4 +1,6 @@
 function y = sum(x)
+    % Array sum
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

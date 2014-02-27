@@ -1,4 +1,6 @@
 function y = mean(x)
+    % Mean value
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

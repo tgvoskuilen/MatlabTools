@@ -1,4 +1,6 @@
 function y = min(x)
+    % Minimum value
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

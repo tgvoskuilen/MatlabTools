@@ -1,4 +1,6 @@
 function p = polyfit(x,y,n)
+    % Polynomial fitting, 0th and 1st order only
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

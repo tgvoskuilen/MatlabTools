@@ -1,4 +1,6 @@
 function [hData, hEx, hEy] = plot(x,y)
+    % Plot function, calls errorbars_xy
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 
@@ -25,10 +27,10 @@ function [hData, hEx, hEy] = plot(x,y)
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
-    if ~strcmp(class(x),'UC')
+    if ~isa(x,'UC')
         x = UC(x);
     end
-    if ~strcmp(class(y),'UC')
+    if ~isa(y,'UC')
         y = UC(y);
     end
     

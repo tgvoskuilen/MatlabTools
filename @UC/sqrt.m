@@ -1,4 +1,6 @@
 function y = sqrt(x)
+    % Square root function
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 
@@ -28,11 +30,9 @@ function y = sqrt(x)
     half = UC(0.5,0,'half');
     y = x .^ half;
     
-    %remove 'half' from contrib and frac lists
-    
+    %remove 'half' from contributions to error
     for i = 1:length(y)
-        keep = ~strcmpi(y(i).Contrib,'half');
-        y(i).Contrib = y(i).Contrib(keep);
-        y(i).Frac = y(i).Frac(keep);
+        keep = ~strcmpi(y(i).Contrib(1,:),'half');
+        y(i).Contrib = y(i).Contrib(:,keep);
         y(i).Name = strcat('sqrt(',x(i).Name,')');
     end

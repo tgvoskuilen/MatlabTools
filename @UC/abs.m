@@ -1,4 +1,6 @@
 function y = abs(x)
+    % Absolute value
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

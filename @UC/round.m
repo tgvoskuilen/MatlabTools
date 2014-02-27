@@ -1,4 +1,6 @@
 function i = round(x)
+    % Round function
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 

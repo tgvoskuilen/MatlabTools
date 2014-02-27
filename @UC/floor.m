@@ -1,4 +1,6 @@
 function i = floor(x)
+    % Floor (round down)
+    
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 
