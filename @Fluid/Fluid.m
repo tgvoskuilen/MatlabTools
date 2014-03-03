@@ -139,6 +139,10 @@ classdef Fluid
             Gas(4).MW = 4*1.00794+12.0107; %g/mol
             Gas(4).NISTCode = 'C74828';
 
+            Gas(5).Name = 'C3H8';
+            Gas(5).MW = 8*1.00794+3*12.0107; %g/mol
+            Gas(5).NISTCode = 'C74986';
+            
             %Match the gas structure with the input gas type
             match = strcmpi(UserInputs{1},{Gas.Name});
             if any(match)
@@ -198,12 +202,15 @@ classdef Fluid
             
             %Calculate parameters
             hWait = waitbar(0, 'Processing Data...');
-            n=203;
+            n = min([203 round(Phigh-Plow)+1]);
             Ru = 8.314472; %J/mol-K OR m^3-Pa/mol-K
             Rsi = Ru/Gas(GasID).MW; %kJ/kg-K
             Re = Rsi * 10; %cm^3-bar/g-K
 
             %Preallocate matrices for raw data
+            
+            % get better n, number of pressures
+            
             rho_full = zeros(n,LT);
             U_full = zeros(n,LT);
             H_full = zeros(n,LT);
@@ -218,19 +225,24 @@ classdef Fluid
                 filename = strcat(Gas(GasID).Name,'/',Tstr,'K_', ...
                                   Pl,'-',Ph,'bar.txt');
                 fid = fopen(filename,'r');
-                C = textscan(fid,'%s');
+                C = textscan(fid,'%s','Delimiter','\t');
                 fclose(fid);
                 
+                if any(strcmpi(C{1},'liquid'))
+                    error('Fluid:GetNISTData',...
+                          'Fluid is liquid at specified conditions');
+                end
+                
                 %Transfer data into variables
-                rho_full(:,t)=str2double(C{1}(33:14:2861,1))./1000; %g/cm^3
-                U_full(:,t)=str2double(C{1}(35:14:2863,1));   %kJ/kg
-                H_full(:,t)=str2double(C{1}(36:14:2864,1));   %kJ/kg
-                S_full(:,t)=str2double(C{1}(37:14:2865,1));   %kJ/kg-K
+                rho_full(:,t)=str2double(C{1}(17:14:end))'./1000; %g/cm^3
+                U_full(:,t)=str2double(C{1}(19:14:end))';   %kJ/kg
+                H_full(:,t)=str2double(C{1}(20:14:end))';   %kJ/kg
+                S_full(:,t)=str2double(C{1}(21:14:end))';   %kJ/kg-K
             end
 
             %Get P lookup vector and remove duplicate rows
             % NIST puts duplicate rows at phase change points
-            P_raw(:,1) = str2double(C{1}(32:14:2860,1)); %bar
+            P_raw(:,1) = str2double(C{1}(16:14:end,1))'; %bar
             [P, indices] = unique(P_raw);                %bar
 
             %Remove duplicated rows in full data matrices
