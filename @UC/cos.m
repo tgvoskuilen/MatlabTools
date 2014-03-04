@@ -27,18 +27,10 @@ function y = cos(x)
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
-    y = x;
-    if length(x) > 1
-        for i = 1:length(x)
-            y(i).Name = strcat('cos(',x(i).Name,')');
-            y(i).Hash = cos(x(i).Hash);
-            y(i).Value = cos(x(i).Value);
-            y(i).Err = abs(sin(x(i).Value) .* x(i).Err);
-        end
-    else
-        y.Name = strcat('cos(',x.Name,')');
-        y.Hash = cos(x.Hash);
-        y.Value = cos(x.Value);
-        y.Err = abs(sin(x.Value) * x.Err);
+    y = UC(cos([x.Value]), abs(sin([x.Value]).*[x.Err]));
+
+    for i = 1:length(x)
+        y(i).Name = strcat('cos(',x(i).Name,')');
     end
+
     

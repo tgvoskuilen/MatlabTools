@@ -1,6 +1,6 @@
-function y = sin(x)
-    % Sine function
-    
+function y = tan(x)
+    % Tangent function
+
     % Copyright (c) 2012, Tyler Voskuilen
     % All rights reserved.
     % 
@@ -27,10 +27,10 @@ function y = sin(x)
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
-    y = UC(sin([x.Value]),abs(cos([x.Value]).*[x.Err]));
-  
+    y = UC(tan([x.Value]), abs(sec([x.Value]).^2.*[x.Err]));
+
     for i = 1:length(x)
-        y(i).Name = strcat('sin(',x(i).Name,')');
+        y(i).Name = strcat('tan(',x(i).Name,')');
     end
 
     

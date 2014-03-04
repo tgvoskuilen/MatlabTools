@@ -27,12 +27,5 @@ function y = sqrt(x)
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
-    half = UC(0.5,0,'half');
-    y = x .^ half;
+    y = x .^ 0.5;
     
-    %remove 'half' from contributions to error
-    for i = 1:length(y)
-        keep = ~strcmpi(y(i).Contrib(1,:),'half');
-        y(i).Contrib = y(i).Contrib(:,keep);
-        y(i).Name = strcat('sqrt(',x(i).Name,')');
-    end

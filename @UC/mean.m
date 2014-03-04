@@ -27,10 +27,6 @@ function y = mean(x)
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
-    y = sum(x);
-    y.Value = y.Value ./ length(x);
-    y.Err = y.Err ./ length(x);
-    y.Hash = y.Hash ./ length(x);
-    %scanned = textscan(x(1).Name,'%[^(]');
-    %xName = scanned{1}{1};
-    %y.Name = strcat('mean(',xName,')');
+    y = UC(mean([x.Value]), ...
+           sqrt(sum([x.Err].^2))./length(x), ...
+           strcat('mean(',x(1).Name,')'));

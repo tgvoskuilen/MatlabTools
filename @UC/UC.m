@@ -172,6 +172,7 @@ classdef UC
                 B = UC(B);
             end
             
+            % NOTE: This assumes a self-correlation factor of 1
             rhoAB = [A.Hash]==[B.Hash];
             
             ym = [A.Value] + [B.Value];
@@ -211,6 +212,7 @@ classdef UC
                 B = UC(B);
             end
 
+            % NOTE: This assumes a self-correlation factor of 1
             rhoAB = [A.Hash]==[B.Hash];
             
             ym = [A.Value] - [B.Value];
@@ -251,6 +253,7 @@ classdef UC
                 B = UC(B);
             end
       
+            % NOTE: This assumes a self-correlation factor of 1
             rhoAB = [A.Hash]==[B.Hash];
             
             ym = [A.Value] .* [B.Value];
@@ -291,7 +294,8 @@ classdef UC
             if ~isa(B,'UC')
                 B = UC(B);
             end
-                          
+            
+            % NOTE: This assumes a self-correlation factor of 1
             rhoAB = [A.Hash]==[B.Hash];
             
             ym = [A.Value] ./ [B.Value];
@@ -334,6 +338,7 @@ classdef UC
                 B = UC(B);
             end
             
+            % NOTE: This assumes a self-correlation factor of 1
             rhoAB = [A.Hash]==[B.Hash];
             
             ym = [A.Value] .^ [B.Value];

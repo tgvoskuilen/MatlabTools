@@ -27,10 +27,6 @@ function y = sum(x)
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
-    ym = sum([x.Value]);
-    ye = sqrt(sum([x.Err].^2));
-    yhash = sum([x.Hash]);
-    %scanned = textscan(x(1).Name,'%[^(]');
-    %xName = scanned{1}{1};
-    yname = strcat('sum(',x(1).Name,')');
-    y = UC(ym, ye, yname, yhash);
+    y = UC(sum([x.Value]), ...
+           sqrt(sum([x.Err].^2)), ...
+           strcat('sum(',x(1).Name,')'));
