@@ -1,7 +1,7 @@
-function y = abs(x)
-    % Absolute value
-    
-    % Copyright (c) 2012, Tyler Voskuilen
+function y = cos(x)
+    % Cosine function
+
+    % Copyright (c) 2014, Tyler Voskuilen
     % All rights reserved.
     % 
     % Redistribution and use in source and binary forms, with or without 
@@ -27,8 +27,11 @@ function y = abs(x)
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
-    y = UC(abs([x.Value]),[x.Err]);
-
-    for i = 1:length(y)
-        y(i).Name = strcat('|',x(i).Name,'|');
+    % argument to trig functions must be dimensionless
+    if max(abs(x.Unit)) > 0
+        error('DimVar:sin',...
+              'Argument to cos() must be dimensionless');
     end
+    y = cos(x.Value);
+
+    

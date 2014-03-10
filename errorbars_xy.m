@@ -195,37 +195,32 @@ end
 %   'MarkerLineWidth'
 function Inputs = get_user_flags(args)
 
-    %Set default inputs
-    ParamFlags = {'ErrorBarColor','ErrorBarLineWidth','Marker',...
-        'MarkerFaceColor','MarkerEdgeColor','MarkerSize',...
-        'MarkerLineWidth'};
-    ParamValues = {'k', 1, 'o',[1 1 1],'k',5,1};
+    % Define structure of inputs with default values
+    Inputs = struct('ErrorBarColor','k',...
+                    'ErrorBarLineWidth',0.8,...
+                    'Marker','o',...
+                    'MarkerFaceColor',[1 1 1],...
+                    'MarkerEdgeColor','k',...
+                    'MarkerSize',5,...
+                    'MarkerLineWidth',0.8);
 
-    %There must be an even number of input args
+    % Verify that there are an even number of args
     nargs = size(args,2)/2;
     if floor(nargs) ~= nargs
         error('Error: Invalid parameter input combination');
     end
     
-    %Apply input flags
+    % Put input arguments into structure
+    %  This returns an error if you give an unexpected input.
     for i = 1:nargs
         flag = args{2*(i-1)+1};
         value = args{2*(i-1)+2};
-        match = strcmpi(flag,ParamFlags);
         
-        if any(match)
-            ID = find(match,1);
-            ParamValues{ID} = value;
+        if isfield(Inputs,flag)
+            Inputs.(flag) = value;
         else
             error('Error: Invalid flag string: %s',flag);
         end
     end
-    
-    Inputs.ErrorBarColor = ParamValues{1};
-    Inputs.ErrorBarLineWidth = ParamValues{2};
-    Inputs.Marker = ParamValues{3};
-    Inputs.MarkerFaceColor = ParamValues{4};
-    Inputs.MarkerEdgeColor = ParamValues{5};
-    Inputs.MarkerSize = ParamValues{6};
-    Inputs.MarkerLineWidth = ParamValues{7};
+
 end

@@ -1,7 +1,7 @@
 function y = abs(x)
     % Absolute value
     
-    % Copyright (c) 2012, Tyler Voskuilen
+    % Copyright (c) 2014, Tyler Voskuilen
     % All rights reserved.
     % 
     % Redistribution and use in source and binary forms, with or without 
@@ -27,8 +27,6 @@ function y = abs(x)
     % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
-    y = UC(abs([x.Value]),[x.Err]);
+    y = x;
+    y.Value = abs(y.Value);
 
-    for i = 1:length(y)
-        y(i).Name = strcat('|',x(i).Name,'|');
-    end
