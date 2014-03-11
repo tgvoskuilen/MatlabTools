@@ -45,7 +45,18 @@ However, these commands are valid:
     y = exp(-x/L);
     z = 10*A;
     
-For more examples, look in `DimVarDemo.m`
+For more examples, look in `DimVarDemo.m`. You can combine this class with
+the features of the `@UC` class below as well. For example:
+
+    k = DimVar(UC(16,2),'W/m-K');
+    L = DimVar(UC(5,1),'mm');
+    A = DimVar(UC(10,1),'cm^2');
+    DT = DimVar(500,'R') - DimVar(200,'K');
+
+    Q = k*A/L*DT;
+    fprintf('Q = %s\n',num2str(Q,4));
+
+will not only propogate the units, but also calculate the resulting uncertainty in Q.
 
 ### @UC
 The UC class is for manipulating and tracking uncertainty through operator
