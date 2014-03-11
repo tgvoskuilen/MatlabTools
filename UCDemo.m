@@ -81,12 +81,6 @@ sumy=sum(y);
 meanx=mean(x);
 meany=mean(y);
 
-% floor and ceil return normal numbers, not UC values
-ceilx=ceil(x);
-ceily=ceil(y);
-floorx=floor(x);
-floory=floor(y);
-
 
 % Make a linear projection using UC vectors
 % x and y are some vectors with random uncertainty, and we want to find

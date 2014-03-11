@@ -417,7 +417,25 @@ classdef UC
         %------------------------------------------------------------------
         function y = tan(x)
             % Tangent function
-            y = UC.UnaryFunction(x, @tan, @(v) abs(sec(v)).^2);
+            y = UC.UnaryFunction(x, @tan, @(v) sec(v).^2);
+        end
+        
+        %------------------------------------------------------------------
+        function y = csc(x)
+            % Cosecant function
+            y = UC.UnaryFunction(x, @csc, @(v) abs(csc(v).*cot(x)));
+        end
+        
+        %------------------------------------------------------------------
+        function y = sec(x)
+            % Secant function
+            y = UC.UnaryFunction(x, @sec, @(v) abs(sec(v).*tan(x)));
+        end
+        
+        %------------------------------------------------------------------
+        function y = cot(x)
+            % Cotangent function
+            y = UC.UnaryFunction(x, @cot, @(v) csc(v).^2);
         end
         
         %------------------------------------------------------------------
@@ -432,6 +450,51 @@ classdef UC
             y = UC.UnaryFunction(x, @exp, @(v) exp(v));
         end
         
+        %------------------------------------------------------------------
+        function y = log(x)
+            % Natural log function 
+            y = UC.UnaryFunction(x, @log, @(v) 1./v);
+        end
+        
+        %------------------------------------------------------------------
+        function y = log10(x)
+            % Log base 10 function 
+            y = UC.UnaryFunction(x, @log10, @(v) 1./(v.*log(10)));
+        end
+        
+        %------------------------------------------------------------------
+        function y = log2(x)
+            % Log base 2 function 
+            y = UC.UnaryFunction(x, @log2, @(v) 1./(v.*log(2)));
+        end
+        
+        %------------------------------------------------------------------
+        function y = sum(x)
+            % Array sum function (does not exactly mimic sum for matrices) 
+            y = UC(sum([x.Value]), ...
+                   sqrt(sum([x.Err].^2)), ...
+                   strcat('sum(',x(1).Name,')'));
+        end
+        
+        %------------------------------------------------------------------
+        function y = mean(x)
+            % Array mean function (does not exactly mimic mean for matrices) 
+            y = UC(mean([x.Value]), ...
+                   sqrt(sum([x.Err].^2))./numel(x), ...
+                   strcat('mean(',x(1).Name,')'));
+        end
+        
+        %------------------------------------------------------------------
+        function y = min(x)
+            % Array min function (does not exactly mimic min for matrices) 
+            y = x([x.Value] == min([x.Value]));
+        end
+        
+        %------------------------------------------------------------------
+        function y = max(x)
+            % Array max function (does not exactly mimic max for matrices) 
+            y = x([x.Value] == max([x.Value]));
+        end
         
         %------------------------------------------------------------------
         function str = num2str(a,arg)

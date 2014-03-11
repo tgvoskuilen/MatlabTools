@@ -1,7 +1,7 @@
 function p = polyfit(x,y,n)
     % Polynomial fitting, 0th and 1st order only
     
-    % Copyright (c) 2012, Tyler Voskuilen
+    % Copyright (c) 2014, Tyler Voskuilen
     % All rights reserved.
     % 
     % Redistribution and use in source and binary forms, with or without 
@@ -30,10 +30,10 @@ function p = polyfit(x,y,n)
     if n > 1
         error('Polyfit is not compatible with UC for polynomial order > 1');
     else
-        if ~strcmp(class(x),'UC')
+        if ~isa(x,'UC')
             x = UC(x,0,'polyfitX');
         end
-        if ~strcmp(class(y),'UC')
+        if ~isa(y,'UC')
             y = UC(y,0,'polyfitY');
         end
         
