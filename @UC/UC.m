@@ -58,27 +58,96 @@ classdef UC
     properties (Access = private)
         Err_r = 0;  % Random error (currently not used)
     end
+    %----------------------------------------------------------------------
+    % Private static functions
+    methods(Static, Access = private)
+        
+        %------------------------------------------------------------------
+        function y = UnaryFunction(x,f,dfdx)
+            y = UC(f([x.Value]), dfdx([x.Value]).*[x.Err]);
+            for i = 1:length(x)
+                y(i).Name = strcat(func2str(f),'(',x(i).Name,')');
+            end
+            y = reshape(y,size(x)); 
+        end
+        
+        %------------------------------------------------------------------
+        function [Av,Ae,Ah,Bv,Be,Bh] = EqualizeInputs(A,B)
+            % Extract value and error arrays from inputs
+            if isa(A,'UC')
+                Av = reshape([A.Value],size(A));
+                Ah = reshape([A.Hash],size(A));
+                Ae = reshape([A.Err],size(A));
+            else
+                Av = A;
+                Ae = 0;
+                Ah = -1;
+            end
+            
+            if exist('B','var')
+                if isa(B,'UC')
+                    Bv = reshape([B.Value],size(B));
+                    Bh = reshape([B.Hash],size(B));
+                    Be = reshape([B.Err],size(B));
+                else
+                    Bv = B;
+                    Be = 0;
+                    Bh = -1;
+                end
+            end
+        end
+        
+    end
+    
     
     %----------------------------------------------------------------------
     methods (Access = private)
+        
+        %------------------------------------------------------------------
         function y = AssignContrib(obj, A, B, fA, fB, opString)
             % Determine the fractional contribution to uncertainty from separate inputs
             
             y = obj;
                        
-            for i = 1:length(y)
+            for i = 1:numel(y)
+                
+                if i > numel(A)
+                    Ai = A;
+                else
+                    Ai = A(i);
+                end
+                
+                if i > numel(B)
+                    Bi = B;
+                else
+                    Bi = B(i);
+                end
+
                 % Technically the '^' operator doesn't need (), but it's
                 % more clear that way about order of operations
-                y(i).Name = strcat('(',A(i).Name,opString,B(i).Name,')');
-                
-                if fA(i) == 0 && fB(i) ~= 0
-                    y(i).Contrib = B(i).Contrib;
-                elseif fB(i) == 0 && fA(i) ~= 0
-                    y(i).Contrib = A(i).Contrib;
+                if isa(Ai,'UC')
+                    AName = Ai.Name;
                 else
-                    fyFull = [cell2mat(A(i).Contrib(2,:)).*fA(i) ...
-                              cell2mat(B(i).Contrib(2,:)).*fB(i)];
-                    yContribFull = [A(i).Contrib(1,:) B(i).Contrib(1,:)];
+                    AName = num2str(Ai);
+                end
+                if isa(Bi,'UC')
+                    BName = Bi.Name;
+                else
+                    BName = num2str(Bi);
+                end
+                
+                y(i).Name = strcat('(',AName,opString,BName,')');
+
+                if isnan(fA(i)) || isnan(fB(i))
+                    y(i).Contrib = {};
+                elseif fA(i) == 0 && fB(i) ~= 0
+                    y(i).Contrib = Bi.Contrib;
+                elseif fB(i) == 0 && fA(i) ~= 0
+                    y(i).Contrib = Ai.Contrib;
+                else
+                    fyFull = [cell2mat(Ai.Contrib(2,:)).*fA(i) ...
+                              cell2mat(Bi.Contrib(2,:)).*fB(i)];
+                    yContribFull = [Ai.Contrib(1,:) Bi.Contrib(1,:)];
                     
                     y(i).Contrib = {};
                     Nc = length(unique(yContribFull));
@@ -134,28 +203,24 @@ classdef UC
                     hash = ones(size(val)).*hash;
                 end
                 
-                m = size(val,1);
-                n = size(val,2);
-                uc(m,n) = UC;
-                for i=1:m
-                    for j=1:n
-                        uc(i,j).Value = val(i,j);
-                        uc(i,j).Err = err(i,j);
-                        uc(i,j).Err_r = 0;
-                        uc(i,j).Hash = hash(i,j);
-                        if isempty(name)
-                            uc(i,j).Name = num2str(val(i,j));
+                uc(numel(val)) = UC;
+                for i=1:numel(val)
+                    uc(i).Value = val(i);
+                    uc(i).Err = err(i);
+                    uc(i).Err_r = 0;
+                    uc(i).Hash = hash(i);
+                    if isempty(name)
+                        uc(i).Name = num2str(val(i));
+                    else
+                        if numel(val) > 1
+                            uc(i).Name=strcat(name,'(',num2str(i),')');
                         else
-                            if m*n > 1
-                                uc(i,j).Name=strcat(name,'(',num2str(i),...
-                                                    ',',num2str(j),')');
-                            else
-                                uc(i,j).Name=name;
-                            end
+                            uc(i).Name=name;
                         end
-                        uc(i,j).Contrib = {uc(i,j).Name; 1};
                     end
+                    uc(i).Contrib = {uc(i).Name; 1};
                 end
+                uc = reshape(uc,size(val));
             end
         end
 
@@ -164,39 +229,15 @@ classdef UC
         %------------------------------------------------------------------
         function y = plus(A, B)
             % Addition operator
+            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
+            rhoAB = Ah==Bh;
+            yv = Av + Bv;
+            ye = sqrt(Ae.^2 + Be.^2 + 2.*rhoAB.*Ae.*Be);
+            y = UC(yv, ye, '', Ah+Bh);
             
-            if ~isa(A,'UC')
-                A = UC(A);
-            end
-            if ~isa(B,'UC')
-                B = UC(B);
-            end
-            
-            % NOTE: This assumes a self-correlation factor of 1
-            rhoAB = [A.Hash]==[B.Hash];
-            
-            ym = [A.Value] + [B.Value];
-            ye = sqrt([A.Err].^2 + [B.Err].^2 + 2*rhoAB.*[A.Err].*[B.Err]);
-            yhash = [A.Hash] + [B.Hash];
-            
-            y = UC(ym, ye, '', yhash);
-            
-            % Make A and B vectors of the same length
-            if length(A) == 1 && length(B) > 1
-                sb = size(B);
-                A(1:sb(1),1:sb(2)) = A;
-            end
-
-            if length(B) == 1 && length(A) > 1
-                sa = size(A);
-                B(1:sa(1),1:sa(2)) = B;
-            end
-
-            % Loop through elements of y and assign contrib to each
-            fA = [A.Err].^2 ./ ye.^2;
-            fB = [B.Err].^2 ./ ye.^2;
-            %fA(isnan(fA)) = 0;
-            %fB(isnan(fB)) = 0;
+            % Fractional contributions, fA + fB = 1
+            fA = Ae.^2 ./ ye.^2;
+            fB = Be.^2 ./ ye.^2;
             
             y = AssignContrib(y, A, B, fA, fB, '+');
         end
@@ -204,82 +245,32 @@ classdef UC
         %------------------------------------------------------------------
         function y = minus(A, B)
             % Subtraction operator
+            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
+            rhoAB = Ah==Bh;
+            yv = Av - Bv;
+            ye = sqrt(Ae.^2 + Be.^2 - 2.*rhoAB.*Ae.*Be);
+            y = UC(yv, ye, '', Ah-Bh);
             
-            if ~isa(A,'UC')
-                A = UC(A);
-            end
-            if ~isa(B,'UC')
-                B = UC(B);
-            end
-
-            % NOTE: This assumes a self-correlation factor of 1
-            rhoAB = [A.Hash]==[B.Hash];
-            
-            ym = [A.Value] - [B.Value];
-            ye = sqrt([A.Err].^2 + [B.Err].^2 - 2*rhoAB.*[A.Err].*[B.Err]);
-            yhash = [A.Hash] - [B.Hash];
-            
-            y = UC(ym, ye, '', yhash);
-            
-            % Make A and B vectors of the same length
-            if length(A) == 1 && length(B) > 1
-                sb = size(B);
-                A(1:sb(1),1:sb(2)) = A;
-            end
-
-            if length(B) == 1 && length(A) > 1
-                sa = size(A);
-                B(1:sa(1),1:sa(2)) = B;
-            end
-
-            % Loop through elements of y and assign contrib to each
-            fA = [A.Err].^2 ./ ye.^2;
-            fB = [B.Err].^2 ./ ye.^2;
-            %fA(isnan(fA)) = 0;
-            %fB(isnan(fB)) = 0;
+            % Fractional contributions, fA + fB = 1
+            fA = Ae.^2 ./ ye.^2;
+            fB = Be.^2 ./ ye.^2;
             
             y = AssignContrib(y, A, B, fA, fB, '-');
-
         end
         
         %------------------------------------------------------------------
         function y = times(A, B)
             % Multiplcation operator
+            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
+            rhoAB = Ah==Bh;
+            yv = Av.*Bv;
+            ye = sqrt((Bv.*Ae).^2 + (Av.*Be).^2 +...
+                      2.*rhoAB.*Av.*Bv.*Ae.*Be);
+            y = UC(yv, ye, '', Ah.*Bh);
             
-            if ~isa(A,'UC')
-                A = UC(A);
-            end
-            if ~isa(B,'UC')
-                B = UC(B);
-            end
-      
-            % NOTE: This assumes a self-correlation factor of 1
-            rhoAB = [A.Hash]==[B.Hash];
-            
-            ym = [A.Value] .* [B.Value];
-            ye = sqrt(([B.Value].*[A.Err]).^2 + ...
-                      ([A.Value].*[B.Err]).^2 + ...
-                      2.*rhoAB.*[A.Value].*[B.Value].*[A.Err].*[B.Err]);
-            yhash = [A.Hash] .* [B.Hash];
-                      
-            y = UC(ym, ye, '', yhash);
-            
-            % Make A and B vectors of the same length
-            if length(A) == 1 && length(B) > 1
-                sb = size(B);
-                A(1:sb(1),1:sb(2)) = A;
-            end
-
-            if length(B) == 1 && length(A) > 1
-                sa = size(A);
-                B(1:sa(1),1:sa(2)) = B;
-            end
-
-            % Loop through elements of y and assign contrib to each
-            fA = ([A.Err].*[B.Value]).^2 ./ ye.^2;
-            fB = ([B.Err].*[A.Value]).^2 ./ ye.^2;
-            %fA(isnan(fA)) = 0;
-            %fB(isnan(fB)) = 0;
+            % Fractional contributions, fA + fB = 1
+            fA = (Ae.*Bv).^2 ./ ye.^2;
+            fB = (Av.*Be).^2 ./ ye.^2;
             
             y = AssignContrib(y, A, B, fA, fB, '*');
         end
@@ -287,85 +278,35 @@ classdef UC
         %------------------------------------------------------------------
         function y = rdivide(A, B)
             % Division operator
+            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
+            rhoAB = Ah==Bh;
+            yv = Av./Bv;
+            ye = sqrt((Ae./Bv).^2 + (Av./Bv.^2.*Be).^2 - ...
+                      2.*rhoAB.*Ae.*Be./Av./Bv);
+            y = UC(yv, ye, '', Ah./Bh);
             
-            if ~isa(A,'UC')
-                A = UC(A);
-            end
-            if ~isa(B,'UC')
-                B = UC(B);
-            end
-            
-            % NOTE: This assumes a self-correlation factor of 1
-            rhoAB = [A.Hash]==[B.Hash];
-            
-            ym = [A.Value] ./ [B.Value];
-            ye = sqrt(([A.Err] ./ [B.Value]).^2 + ...
-                      ([A.Value] ./ [B.Value] .^2 .* [B.Err]).^2 - ...
-                      2.*rhoAB.*[A.Err].*[B.Err]./[A.Value]./[B.Value]);
-            yhash = [A.Hash] ./ [B.Hash];        
-            
-            y = UC(ym, ye, '', yhash);
-            
-            % Make A and B vectors of the same length
-            if length(A) == 1 && length(B) > 1
-                sb = size(B);
-                A(1:sb(1),1:sb(2)) = A;
-            end
-
-            if length(B) == 1 && length(A) > 1
-                sa = size(A);
-                B(1:sa(1),1:sa(2)) = B;
-            end
-
-            % Loop through elements of y and assign contrib to each
-            fA = ([A.Err]./[B.Value]).^2 ./ ye.^2;
-            fB = ([A.Value]./[B.Value].^2.*[B.Err]).^2 ./ ye.^2;
-            %fA(isnan(fA)) = 0;
-            %fB(isnan(fB)) = 0;
+            % Fractional contributions, fA + fB = 1
+            fA = (Ae./Bv).^2 ./ ye.^2;
+            fB = (Av./Bv.^2.*Be).^2 ./ ye.^2;
             
             y = AssignContrib(y, A, B, fA, fB, '/');
-
         end
         
         %------------------------------------------------------------------
         function y = power(A, B)
             % Power operator
+            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
+            rhoAB = Ah==Bh;
+            yv = Av.^Bv;
+            ye = sqrt((Bv.*Av.^(Bv-1).*Ae).^2 + ...
+                      (log(Av).*yv.*Be).^2 + ...
+                      2.*rhoAB.*Bv.*Av.^(Bv.*(Bv-1)).*log(Av).*Ae.*Be);
             
-            if ~isa(A,'UC')
-                A = UC(A);
-            end
-            if ~isa(B,'UC')
-                B = UC(B);
-            end
+            y = UC(yv, ye, '', Ah.^Bh);
             
-            % NOTE: This assumes a self-correlation factor of 1
-            rhoAB = [A.Hash]==[B.Hash];
-            
-            ym = [A.Value] .^ [B.Value];
-            ye = sqrt(([B.Value].*[A.Value].^([B.Value] - 1).*[A.Err]).^2 ...
-                    + (log([A.Value]).*ym.*[B.Err]).^2 + ...
-                    2.*rhoAB.*[B.Value].*[A.Value].^([B.Value].*([B.Value]-1))...
-                    .*log([A.Value]).*[A.Err].*[B.Err]);
-            yhash = [A.Hash] .^ [B.Hash];
-            
-            y = UC(ym, ye, '', yhash);
-            
-            % Make A and B vectors of the same length
-            if length(A) == 1 && length(B) > 1
-                sb = size(B);
-                A(1:sb(1),1:sb(2)) = A;
-            end
-
-            if length(B) == 1 && length(A) > 1
-                sa = size(A);
-                B(1:sa(1),1:sa(2)) = B;
-            end
-
-            % Loop through elements of y and assign contrib to each
-            fA = ([B.Value].*[A.Value].^([B.Value] - 1).*[A.Err]).^2 ./ ye.^2;
-            fB = (log([A.Value]).*ym.*[B.Err]).^2 ./ ye.^2;
-            %fA(isnan(fA)) = 0;
-            %fB(isnan(fB)) = 0;
+            % Fractional contributions, fA + fB = 1
+            fA = (Bv.*Av.^(Bv-1).*Ae).^2 ./ ye.^2;
+            fB = (log(Av).*yv.*Be).^2 ./ ye.^2;
             
             y = AssignContrib(y, A, B, fA, fB, '^');
         end
@@ -454,6 +395,43 @@ classdef UC
             % Display the value and uncertainty
             disp(num2str(a));
         end
+        
+        %------------------------------------------------------------------
+        function y = abs(x)
+            % Absolute value
+            y = UC.UnaryFunction(x, @abs, @(v) 1);
+        end
+        
+        %------------------------------------------------------------------
+        function y = cos(x)
+            % Cosine function
+            y = UC.UnaryFunction(x, @cos, @(v) abs(sin(v)));
+        end
+        
+        %------------------------------------------------------------------
+        function y = sin(x)
+            % Sine function
+            y = UC.UnaryFunction(x, @sin, @(v) abs(cos(v)));
+        end
+        
+        %------------------------------------------------------------------
+        function y = tan(x)
+            % Tangent function
+            y = UC.UnaryFunction(x, @tan, @(v) abs(sec(v)).^2);
+        end
+        
+        %------------------------------------------------------------------
+        function y = sqrt(x)
+            % Square root
+            y = UC.UnaryFunction(x, @sqrt, @(v) 0.5./v.^0.5);
+        end
+        
+        %------------------------------------------------------------------
+        function y = exp(x)
+            % Exponential function 
+            y = UC.UnaryFunction(x, @exp, @(v) exp(v));
+        end
+        
         
         %------------------------------------------------------------------
         function str = num2str(a,arg)

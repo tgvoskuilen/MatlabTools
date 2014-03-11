@@ -58,15 +58,15 @@ if length(y) ~= n
     error('All input vectors must be the same length');
 end
 
-if ~strcmp(class(x),'UC')
+if ~isa(x,'UC')
     x = UC(x);
 end
 
-if ~strcmp(class(y),'UC')
+if ~isa(y,'UC')
     y = UC(y);
 end
 
-if ~strcmp(class(xp),'UC')
+if ~isa(xp,'UC')
     xp = UC(xp);
 end
 
