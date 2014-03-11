@@ -25,6 +25,28 @@ for `startup.m` may be different depending on where you save the files.
 Classes
 --------------------------
 
+### @DimVar
+The DimVar class (shorthand for Dimensioned Variable) lets you use quantities with units in Matlab with minimal tedious unit conversion. An example use to calculate heat conduction is:
+
+    k = DimVar(2,'BTU-in/hr-ft^2-F');
+    A = DimVar(1,'cm2');
+    L = DimVar(1,'in');
+    DT = DimVar(300,'K') - DimVar(0,'F')
+    Q = k*A*DT/L;
+    
+In this example, the units from the individual components are combined and the resulting units on Q are in power (Watts, all derived quantities will be in SI units). The class also checks unit compatibility during addition, subtraction, comparison, and other math operations. For example, the following command would generate an error since `k` and `L` have different units:
+
+    x = k + L;
+    
+However, these commands are valid:
+
+    x = L + sqrt(A);
+    V = L*A;
+    y = exp(-x/L);
+    z = 10*A;
+    
+For more examples, look in `DimVarDemo.m`
+
 ### @UC
 The UC class is for manipulating and tracking uncertainty through operator
 overloading of basic Matlab scalars and arrays. For usage examples, see
