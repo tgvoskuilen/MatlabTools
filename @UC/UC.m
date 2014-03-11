@@ -452,7 +452,29 @@ classdef UC
         %------------------------------------------------------------------
         function display(a)
             % Display the value and uncertainty
-            disp([num2str([a.Value]),' ',char(177),' ',num2str([a.Err])]);
+            disp(num2str(a));
+        end
+        
+        %------------------------------------------------------------------
+        function str = num2str(a,arg)
+            % Generate string of value and uncertainty
+            if nargin > 1
+                str = [num2str(a(1).Value,arg),' ',char(177),' ',...
+                       num2str(a(1).Err,arg)];
+                for i = 2:numel(a)
+                    str = strcat(str,[', ',num2str(a(i).Value,arg),...
+                                      ' ',char(177),' ',...
+                                      num2str(a(i).Err,arg)]);
+                end
+            else
+                str = [num2str(a(1).Value),' ',char(177),' ',...
+                       num2str(a(1).Err)];
+                for i = 2:numel(a)
+                    str = strcat(str,[', ',num2str(a(i).Value),...
+                                      ' ',char(177),' ',...
+                                      num2str(a(i).Err)]);
+                end
+            end
         end
         
         %-----------------------------------------------------------------

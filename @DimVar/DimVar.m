@@ -33,6 +33,9 @@ classdef DimVar
     %    otherwise the 10 C value will be converted to 283.15 K rather 
     %    than 10 K. You can also deal with it by using the subtraction, so
     %    DT = DimVar(10,'C') - DimVar(0,'C')
+    %
+    % The most up-to-date version of this class is on Github at:
+    %  http://github.com/tgvoskuilen/MatlabTools
     
     % Copyright (c) 2014, Tyler Voskuilen
     % All rights reserved.
@@ -66,18 +69,17 @@ classdef DimVar
         Value = 0;  % Value (scalar or array)
     end
     
-    properties (Access = private)
+    %----------------------------------------------------------------------
+    properties %(Access = private)
         Unit = [0 0 0 0 0];  % Unit array [kg m s K kmol]
     end
     
     %----------------------------------------------------------------------
-    % Dependent properties (looked up from sub-structures)
     properties (Dependent = true, SetAccess = private)
         UnitStr  % String representation of unit
     end
     
     %----------------------------------------------------------------------
-    % Constant properties
     properties (Constant, Access = private)
         % uTable - Structure of recognized units. To add new units, add
         %          them to this structure
@@ -90,70 +92,84 @@ classdef DimVar
             'lbm',{0.453592, [1 0 0 0 0]}, ... 
             'lb', {0.453592, [1 0 0 0 0]}, ... Assume lb intended as mass
         ...
-        ... Length units (km,m,cm,mm,ft,in)
+        ... Length units (km,m,cm,mm,um,nm,ft,in)
             'km', {1e3,    [0 1 0 0 0]}, ...
             'm',  {1,      [0 1 0 0 0]}, ...
             'cm', {1e-2,   [0 1 0 0 0]}, ...
             'mm', {1e-3,   [0 1 0 0 0]}, ...
+            'um', {1e-6,   [0 1 0 0 0]}, ...
+            'nm', {1e-9,   [0 1 0 0 0]}, ...
             'ft', {0.3048, [0 1 0 0 0]}, ...
             'in', {0.0254, [0 1 0 0 0]}, ...
         ...
-        ... Time units (s,min,hr)
+        ... Time units (ms,s,min,hr)
+            'ms',  {1e-3,  [0 0 1 0 0]}, ...
             's',   {1,     [0 0 1 0 0]}, ...
             'min', {60,    [0 0 1 0 0]}, ...
             'hr',  {3600,  [0 0 1 0 0]}, ...
         ...
         ... Temperature units (K,C,R,F)
-            'k',   {1,             [0 0 0 1 0]}, ...
-            'r',   {5/9,           [0 0 0 1 0]}, ...
-            'c',   {[1 273.15],    [0 0 0 1 0]}, ...
-            'f',   {[5/9 255.372], [0 0 0 1 0]}, ...
+            'K',   {1,             [0 0 0 1 0]}, ...
+            'R',   {5/9,           [0 0 0 1 0]}, ...
+            'C',   {[1 273.15],    [0 0 0 1 0]}, ...
+            'F',   {[5/9 255.372], [0 0 0 1 0]}, ...
         ...
         ... Molar quantity units (mol,kmol)
             'kmol',  {1,    [0 0 0 0 1]}, ...
             'mol',   {1e-3, [0 0 0 0 1]}, ...
         ...
         ... Volume units (L,ml,cc)
-            'l',  {1e-3, [0 3 0 0 0]}, ...
+            'L',  {1e-3, [0 3 0 0 0]}, ...
             'ml', {1e-6, [0 3 0 0 0]}, ...
             'cc', {1e-6, [0 3 0 0 0]}, ...
         ...
-        ... Flow rate units (gpm,cfm)
+        ... Volumetric flow rate units (gpm,cfm)
             'gpm',  {1/15852,  [0 3 -1 0 0]}, ...
             'cfm',  {1/2119,   [0 3 -1 0 0]}, ...
         ...
-        ... Frequency units (Hz,rpm)
-            'hz',  {1,    [0 0 -1 0 0]},...
+        ... Frequency units (Hz,kHz,MHz,GHz,rpm)
+            'Hz',  {1,    [0 0 -1 0 0]},...
+            'kHz', {1e3,  [0 0 -1 0 0]},...
+            'MHz', {1e6,  [0 0 -1 0 0]},...
+            'GHz', {1e9,  [0 0 -1 0 0]},...
             'rpm', {1/60, [0 0 -1 0 0]},...
         ...
-        ... Energy units (J,BTU,erg,cal,kWh)
-            'j',   {1,          [1 2 -2 0 0]},...
-            'btu', {1055.05585, [1 2 -2 0 0]},...
+        ... Energy units (J,eV,mJ,kJ,MJ,BTU,erg,cal,kWh)
+            'J',   {1,          [1 2 -2 0 0]},...
+            'eV',  {1.6022e-19, [1 2 -2 0 0]},...
+            'mJ',  {1e-3,       [1 2 -2 0 0]},...
+            'kJ',  {1e3,        [1 2 -2 0 0]},...
+            'MJ',  {1e6,        [1 2 -2 0 0]},...
+            'BTU', {1055.05585, [1 2 -2 0 0]},...
             'erg', {1e-7,       [1 2 -2 0 0]},...
             'cal', {4.184,      [1 2 -2 0 0]},...
-            'kwh', {3.6e6,      [1 2 -2 0 0]},...
+            'kWh', {3.6e6,      [1 2 -2 0 0]},...
         ...
-        ... Power units (W)
-            'w',  {1,    [1 2 -3 0 0]},...
+        ... Power units (W,MW,mW,kW,hp)
+            'W',  {1,          [1 2 -3 0 0]},...
+            'MW', {1e6,        [1 2 -3 0 0]},...
+            'mW', {1e-3,       [1 2 -3 0 0]},...
+            'kW', {1e3,        [1 2 -3 0 0]},...
+            'hp', {745.699872, [1 2 -3 0 0]},...
         ...
         ... Force units (N,lbf,dyne)
-            'n',   {1,          [1 1 -2 0 0]}, ...
+            'N',   {1,          [1 1 -2 0 0]}, ...
             'lbf', {4.44822162, [1 1 -2 0 0]}, ...
             'dyne',{1e-5,       [1 1 -2 0 0]}, ...
         ...
-        ... Pressure units (psi,bar,pa,kpa,mpa,torr,mbar,atm)
-            'pa',   {1,          [1 -1 -2 0 0]}, ...
-            'kpa',  {1e3,        [1 -1 -2 0 0]}, ...
-            'mpa',  {1e6,        [1 -1 -2 0 0]}, ...
+        ... Pressure units (psi,bar,Pa,kPa,MPa,torr,mbar,atm)
+            'Pa',   {1,          [1 -1 -2 0 0]}, ...
+            'kPa',  {1e3,        [1 -1 -2 0 0]}, ...
+            'MPa',  {1e6,        [1 -1 -2 0 0]}, ...
             'bar',  {1e5,        [1 -1 -2 0 0]}, ...
             'mbar', {1e2,        [1 -1 -2 0 0]}, ...
             'torr', {133.322368, [1 -1 -2 0 0]}, ...
             'psi',  {6894.75729, [1 -1 -2 0 0]}, ...
             'atm',  {101325,     [1 -1 -2 0 0]}, ...
         ...
-        ... Dynamic viscosity units (p,cp)
-            'p',   {0.1,   [1 -1 -1 0 0]}, ...
-            'cp',  {0.001, [1 -1 -1 0 0]}  ...
+        ... Dynamic viscosity units (P,cP)
+            'P',   {0.1,   [1 -1 -1 0 0]}, ...
+            'cP',  {0.001, [1 -1 -1 0 0]}  ...
         );
     end
     
@@ -171,13 +187,95 @@ classdef DimVar
     methods(Static, Access = private)
         
         %------------------------------------------------------------------
-        function CheckUnits(dv1,dv2,opStr)
-            % Check if units are equal, raise an error if they are not
-            if ~all(dv1.Unit == dv2.Unit);
+        function y = EvalDimlessFcn(A,f)
+            % Evaluate a function by handle requiring dimensionless inputs
+            [Av,Au] = DimVar.EqualizeInputs(A);
+            if ~DimVar.IsDimless(Au)
+                error('DimVar:DimlessFcn',...
+                      'Arguments to %s() must be dimensionless',...
+                      func2str(f));
+            end
+            y = DimVar(f(Av));
+        end
+        
+        %------------------------------------------------------------------
+        function U = CombineUnits(Au,Bu,f,checkEqual,opStr)
+            % Combine two unit cell arrays
+            
+            if ~exist('checkEqual','var')
+                checkEqual = false;
+            end
+
+            if checkEqual
+                DimVar.CheckUnits(Au,Bu,opStr);
+            end
+            
+            sa = size(Au);
+            sb = size(Bu);
+            
+            if numel(Au) == numel(Bu) && all(sa(:)==sb(:))
+                U = cellfun(@(x,y) f(x,y), Au, Bu, 'UniformOutput',false);
+            elseif numel(Au) == 1
+                U = cellfun(@(x) f(Au{1},x), Bu, 'UniformOutput',false);
+            elseif numel(Bu) == 1
+                U = cellfun(@(x) f(x,Bu{1}), Au, 'UniformOutput',false);
+            else
+                error('DimVar:CombineUnits',...
+                      'Unequal array size');
+            end
+        end
+        
+        %------------------------------------------------------------------
+        function isDimless = IsDimless(Au)
+            % Check if a unit cell array is dimensionless
+            dimless = cellfun(@(x) max(abs(x)) == 0, Au);
+            isDimless = all(dimless(:));
+        end
+        
+        
+        %------------------------------------------------------------------
+        function [Av,Au,Bv,Bu] = EqualizeInputs(A,B)
+            % Extract value and unit array and cell array from inputs
+            if isa(A,'DimVar')
+                Av = reshape([A.Value],size(A));
+                Au = reshape({A.Unit},size(A));
+            else
+                Av = A;
+                Au = {[0 0 0 0 0]};
+            end
+            
+            if exist('B','var')
+                if isa(B,'DimVar')
+                    Bv = reshape([B.Value],size(B));
+                    Bu = reshape({B.Unit},size(B));
+                else
+                    Bv = B;
+                    Bu = {[0 0 0 0 0]};
+                end
+            end
+        end
+        
+        %------------------------------------------------------------------
+        function CheckUnits(Au,Bu,opStr)
+            % Check if two sets of units are equal
+            
+            sa = size(Au);
+            sb = size(Bu);
+
+            if numel(Au) == numel(Bu) && all(sa(:)==sb(:))
+                ma = cellfun(@(x,y) all(x==y), Au, Bu);
+            elseif numel(Au) == 1
+                ma = cellfun(@(x) all(Au{1}==x), Bu);
+            elseif numel(Bu) == 1
+                ma = cellfun(@(x) all(x==Bu{1}), Au);
+            else
                 error('DimVar:CheckUnits',...
-                      ['Unit mismatch in "%s" operator, attempting',...
-                      ' to combine %s and %s'],opStr,...
-                      dv1.UnitStr,dv2.UnitStr);
+                      'Unequal array size');
+            end
+
+            if ~all(ma(:))
+                error('DimVar:CheckUnits',...
+                      'Unit mismatch in "%s" operator',opStr);
             end
         end
         
@@ -243,27 +341,7 @@ classdef DimVar
                 factor = factor(1);
             end
         end
-        
-        %------------------------------------------------------------------
-        function str = GetString(num)
-            % Convert num to a string
-            eps = 1e-6;
-            l = floor(num);
-            str = sprintf('%d',l);
-
-            if l ~= num
-                str = strcat(str,'.');
-                d = num - l;
-                nd = 1;
-
-                while abs(d) > eps && nd <= 4
-                    str = strcat(str,sprintf('%1d',floor(10*d + eps)));
-                    d = 10*d - floor(10*d + eps);
-                    nd = nd + 1;
-                end
-            end
-        end
-        
+                
         %------------------------------------------------------------------
         function np = ReadUnitPower(str,sgn)
             % Read a string like 'm^3' or 'm3' and get the unit and power
@@ -272,9 +350,8 @@ classdef DimVar
             
             if isempty(pid)
                 str = regexprep(str,'([0-9]+)','^$1');
+                pid = strfind(str,'^');
             end
-            
-            pid = strfind(str,'^');
             
             if isempty(pid)
                 base = str;
@@ -350,11 +427,11 @@ classdef DimVar
         function [unit,factor] = ReadBaseUnit(str)
             % Look up the base unit array and factor from a unit string
             
-            if isfield(DimVar.uTable, lower(str))
-                [factor,unit] = DimVar.uTable.(lower(str));
+            if isfield(DimVar.uTable, str)
+                [factor,unit] = DimVar.uTable.(str);
             else
                 % Return an error for unknown units
-                error('DimVar:ReadUnitStr',...
+                error('DimVar:ReadBaseUnit',...
                       'Unrecognized unit "%s"',str);
             end
             
@@ -368,40 +445,60 @@ classdef DimVar
         function dv = DimVar(val, unit, isrel)
             % Constructor for a dimensioned variable
             
-            if nargin ~= 0
-                if nargin >= 2
-                    if exist('isrel','var')
-                        if strcmpi(isrel,'relative')
-                            isRel = true;
-                        else
-                            error('MATLAB:DimVar',...
-                                  'Unknown argument "%s"',isrel);
-                        end
+            if nargin >= 2
+                % Check if input specifies a relative quantity
+                if exist('isrel','var')
+                    if strcmpi(isrel,'relative')
+                        isRel = true;
                     else
-                        isRel = false;
-                    end
-                    
-                    if ischar(unit)
-                        [dv.Unit,f] = DimVar.ReadUnitStr(unit);
-                        if length(f) == 2 && ~isRel
-                            dv.Value = val.*f(1) + f(2);
-                        else
-                            dv.Value = val.*f(1);
-                        end
-                    else
-                        if length(unit) == 5
-                            dv.Unit = unit;
-                            dv.Value = val;
-                        else
-                            error('MATLAB:DimVar',...
-                                  'Invalid unit array');
-                        end
+                        error('MATLAB:DimVar',...
+                              'Unknown argument "%s"',isrel);
                     end
                 else
-                    dv.Unit = [0 0 0 0 0];
-                    dv.Value = val;
+                    isRel = false;
                 end
+
+                if ischar(unit)
+                    [u,f] = DimVar.ReadUnitStr(unit);
+                    if length(f) == 2 && ~isRel
+                        v = val.*f(1) + f(2);
+                    else
+                        v = val.*f(1);
+                    end
+                    
+                    dv(numel(v)) = DimVar();
+                    for i = 1:numel(v)
+                        dv(i).Value = v(i);
+                        dv(i).Unit = u;
+                    end
+                    dv = reshape(dv,size(val));
+                else
+                    if ~iscell(unit) && length(unit) ~= 5
+                        error('DimVar:DimVar',...
+                              'Invalid input unit array');
+                    end
+                    
+                    dv(numel(val)) = DimVar();
+                    for i = 1:numel(val)
+                        dv(i).Value = val(i);
+                        if iscell(unit)
+                            dv(i).Unit = unit{i};
+                        else
+                            dv(i).Unit = unit;
+                        end
+                    end
+                    dv = reshape(dv,size(val));
+                end
+            elseif nargin == 1
+                % Assume dimensionless if only number given
+                dv(numel(val)) = DimVar();
+                for i = 1:numel(val)
+                    dv(i).Value = val(i);
+                    dv(i).Unit = [0 0 0 0 0];
+                end
+                dv = reshape(dv,size(val));
             end
+ 
         end
 
         %------------------------------------------------------------------
@@ -409,141 +506,80 @@ classdef DimVar
         %------------------------------------------------------------------
         function y = plus(A, B)
             % Addition operator
-            
-            if ~isa(A,'DimVar')
-                A = DimVar(A);
-            end
-            if ~isa(B,'DimVar')
-                B = DimVar(B);
-            end
-            
-            % Check units
-            DimVar.CheckUnits(A,B,'plus');
-            
-            y = DimVar(A.Value+B.Value,A.Unit);
+            [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
+            Yu = DimVar.CombineUnits(Au,Bu,@(x,y) x, true, 'plus');
+            y = DimVar(Av+Bv, Yu);
         end
         
         %------------------------------------------------------------------
         function y = minus(A, B)
             % Subtraction operator
-            
-            if ~isa(A,'DimVar')
-                A = DimVar(A);
-            end
-            if ~isa(B,'DimVar')
-                B = DimVar(B);
-            end
-
-            % Check units
-            DimVar.CheckUnits(A,B,'minus');
-            
-            y = DimVar(A.Value-B.Value,A.Unit);
+            [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
+            Yu = DimVar.CombineUnits(Au,Bu,@(x,y) x, true, 'minus');
+            y = DimVar(Av-Bv, Yu);
+        end
+        
+        %------------------------------------------------------------------
+        function y = uminus(A)
+            % Negation operator
+            [Av,Au] = DimVar.EqualizeInputs(A);
+            y = DimVar(-Av,Au);
         end
         
         %------------------------------------------------------------------
         function y = times(A, B)
             % Multiplcation operator
-            
-            if ~isa(A,'DimVar')
-                A = DimVar(A);
-            end
-            if ~isa(B,'DimVar')
-                B = DimVar(B);
-            end
-            
-            newUnit = A.Unit + B.Unit;
-            y = DimVar(A.Value.*B.Value,newUnit);
+            [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
+            Yu = DimVar.CombineUnits(Au,Bu,@(x,y) x+y);
+            y = DimVar(Av.*Bv, Yu);
         end
         
         %------------------------------------------------------------------
         function y = rdivide(A, B)
             % Division operator
-            
-            if ~isa(A,'DimVar')
-                A = DimVar(A);
-            end
-            if ~isa(B,'DimVar')
-                B = DimVar(B);
-            end
-
-            newUnit = A.Unit - B.Unit;
-            y = DimVar(A.Value./B.Value,newUnit);
+            [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
+            Yu = DimVar.CombineUnits(Au,Bu,@(x,y) x-y);
+            y = DimVar(Av./Bv, Yu);
         end
         
         %------------------------------------------------------------------
         function y = power(A, B)
             % Power operator
+            [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
             
-            if ~isa(A,'DimVar')
-                A = DimVar(A);
-            end
-            if ~isa(B,'DimVar')
-                B = DimVar(B);
-            end
-            
-            % power must be dimensionless
-            if max(abs(B.Unit)) > 0
+            if ~DimVar.IsDimless(Bu)
                 error('DimVar:power',...
                       'Exponent must be dimensionless');
             end
             
-            newUnit = A.Unit.*B.Value;
-            y = DimVar(A.Value.^B.Value,newUnit);
+            Bvc = arrayfun(@(x) x, Bv, 'UniformOutput',false);
+            Yu = DimVar.CombineUnits(Au,Bvc,@(x,y) x.*y);
+            
+            y = DimVar(Av.^Bv, Yu);
         end
        
         %------------------------------------------------------------------
         function bool = lt(A, B)
             % Less than operator
-            if ~isa(A,'DimVar')
-                A = DimVar(A);
-            end
-            if ~isa(B,'DimVar')
-                B = DimVar(B);
-            end
-            
-            % Check units
-            DimVar.CheckUnits(A,B,'less than');
-            
-            bool = ([A.Value] < [B.Value]);
+            [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
+            DimVar.CheckUnits(Au,Bu,'less than');
+            bool = (Av < Bv);
         end
         
         %------------------------------------------------------------------
         function bool = gt(A, B)
             % Greater than operator
-            if ~isa(A,'DimVar')
-                A = DimVar(A);
-            end
-            if ~isa(B,'DimVar')
-                B = DimVar(B);
-            end
-            
-            % Check units
-            DimVar.CheckUnits(A,B,'greater than');
-            
-            bool = ([A.Value] > [B.Value]);
+            [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
+            DimVar.CheckUnits(Au,Bu,'greater than');
+            bool = (Av > Bv);
         end
-        
-        %------------------------------------------------------------------
-        function neg = uminus(A)
-            % Negation operator
-            neg = A;
-            neg.Value = -neg.Value;
-        end
-        
+ 
         %------------------------------------------------------------------
         function bool = eq(A, B)
             % Equality operator - compares value only
-            if ~isa(A,'DimVar')
-                A = DimVar(A);
-            end
-            if ~isa(B,'DimVar')
-                B = DimVar(B);
-            end
-            
-            % Check units
-            DimVar.CheckUnits(A,B,'equal to');
-            
-            bool = ([A.Value] == [B.Value]);
+            [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
+            DimVar.CheckUnits(Au,Bu,'equal to');
+            bool = (Av == Bv);
         end
         
         %------------------------------------------------------------------
@@ -583,15 +619,128 @@ classdef DimVar
         end
         
         %------------------------------------------------------------------
+        function y = exp(A)
+            % Exponential function
+            y = DimVar.EvalDimlessFcn(A,@exp);
+        end
+        
+        %------------------------------------------------------------------
+        function y = sqrt(A)
+            % Square root
+            y = A .^ 0.5;
+        end
+        
+        %------------------------------------------------------------------
+        function y = log2(A)
+            % Base 2 logarithm
+            y = DimVar.EvalDimlessFcn(A,@log2);
+        end
+        
+        %------------------------------------------------------------------
+        function y = log10(A)
+            % Base 10 logarithm
+            y = DimVar.EvalDimlessFcn(A,@log10);
+        end
+
+        %------------------------------------------------------------------
+        function y = log(A)
+            % Natural logarithm
+            y = DimVar.EvalDimlessFcn(A,@log);
+        end
+        
+        %------------------------------------------------------------------
+        function y = sin(A)
+            % Sine function
+            y = DimVar.EvalDimlessFcn(A,@sin);
+        end
+        
+        %------------------------------------------------------------------
+        function y = cos(A)
+            % Cosine function
+            y = DimVar.EvalDimlessFcn(A,@cos);
+        end
+        
+        %------------------------------------------------------------------
+        function y = tan(A)
+            % Tangent function
+            y = DimVar.EvalDimlessFcn(A,@tan);
+        end
+        
+        %------------------------------------------------------------------
+        function y = sum(A)
+            % Sum function
+            [Av,Au] = DimVar.EqualizeInputs(A);
+            DimVar.CheckUnits(Au,Au(1),'sum');
+            y = DimVar(sum(Av), Au{1});
+        end
+        
+        %------------------------------------------------------------------
+        function y = std(A)
+            % Standard deviation function
+            [Av,Au] = DimVar.EqualizeInputs(A);
+            DimVar.CheckUnits(Au,Au(1),'std');
+            y = DimVar(std(Av), Au{1});
+        end
+        
+        %------------------------------------------------------------------
+        function y = mean(A)
+            % Mean function
+            [Av,Au] = DimVar.EqualizeInputs(A);
+            DimVar.CheckUnits(Au,Au(1),'mean');
+            y = DimVar(mean(Av), Au{1});
+        end
+        
+        %------------------------------------------------------------------
+        function y = abs(A)
+            % Absolute value function
+            [Av,Au] = DimVar.EqualizeInputs(A);
+            y = DimVar(abs(Av), Au);
+        end
+        
+        %------------------------------------------------------------------
+        function y = min(A)
+            % Minimum function
+            [Av,Au] = DimVar.EqualizeInputs(A);
+            DimVar.CheckUnits(Au,Au(1),'min');
+            y = DimVar(min(Av), Au);
+        end
+        
+        %------------------------------------------------------------------
+        function y = max(A)
+            % Maximum function
+            [Av,Au] = DimVar.EqualizeInputs(A);
+            DimVar.CheckUnits(Au,Au(1),'max');
+            y = DimVar(max(Av), Au);
+        end
+        
+        %------------------------------------------------------------------
         function display(a)
             % Display the value and unit
-            disp([num2str(a.Value),' [',a.UnitStr,']'])
+            disp(num2str(a))
         end
         
         %------------------------------------------------------------------
         function disp(a)
             % Display the value and unit
             display(a)
+        end
+        
+        %------------------------------------------------------------------
+        function str = num2str(a,arg)
+            % Display the value and unit
+            if nargin > 1
+                str = [num2str(a(1).Value,arg),' [',a(1).UnitStr,']'];
+                for i = 2:numel(a)
+                    str = strcat(str,[', ',num2str(a(i).Value,arg),...
+                                      ' [',a(i).UnitStr,']']);
+                end
+            else
+                str = [num2str(a(1).Value),' [',a(1).UnitStr,']'];
+                for i = 2:numel(a)
+                    str = strcat(str,[', ',num2str(a(i).Value),...
+                                      ' [',a(i).UnitStr,']']);
+                end
+            end
         end
         
         %------------------------------------------------------------------
@@ -616,7 +765,7 @@ classdef DimVar
                         unitStr = strcat(unitStr,baseStrs{id},'-');
                     else
                         unitStr = strcat(unitStr,baseStrs{id},'^',...
-                                         DimVar.GetString(self.Unit(id)),...
+                                         num2str(self.Unit(id),4),...
                                          '-');
                     end
                 end
@@ -631,7 +780,7 @@ classdef DimVar
                         unitStr = strcat(unitStr,baseStrs{id},'-');
                     else
                         unitStr = strcat(unitStr,baseStrs{id},'^',...
-                                         DimVar.GetString(-self.Unit(id)),...
+                                         num2str(-self.Unit(id),4),...
                                          '-');
                     end
                 end

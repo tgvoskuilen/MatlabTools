@@ -13,6 +13,7 @@ clc
 %    will be converted to absolute.
 
 
+%% Basic scalar usage demonstration
 k1 = DimVar(16,'W/m-K');
 L1 = DimVar(1,'in');
 A1 = DimVar(1,'ft^2');
@@ -26,6 +27,8 @@ DT2 = DimVar(500,'R') - DimVar(200,'K');
 Q1 = k1*A1/L2*DT1;
 Q2 = k2*A2/L2*DT2;
 
+
+%% Operation checks
 try
     test = A1 + L1;
 catch err
@@ -36,10 +39,50 @@ end
 x = A1*L1;
 y = A1^(L2/L1);
 z = L1 + sqrt(A1);
+w = z/L1;
 
-P = DimVar(0:1:10,'bar');
-p0 = DimVar(1,'atm');
+%% Complete array and scalar function checks
 
-Pr = P/p0;
-disp(P)
-dP = P-p0;
+v{1} = DimVar(0:1:4,'in');
+v{2} = [DimVar(1,'in'), DimVar(10,'m'), DimVar(30,'ft');
+        DimVar(1,'in'), DimVar(10,'m'), DimVar(30,'mm')];
+v{3} = [DimVar(1,'in'), DimVar(10,'C'), DimVar(30,'BTU')];
+
+s1 = DimVar(1,'m');
+s2 = DimVar(1,'m2');
+
+for i = 1:2
+    v{i}+s1;
+    v{i}-s1; %#ok<*MNEFF>
+    
+    v{i}.*s1; %#ok<*VUNUS>
+    v{i}./s1;
+    v{i}.*s2;
+    v{i}./s2;
+    v{1}.^(z/L1);
+    sqrt(v{i});
+    sin(v{i}./s1);
+    cos(v{i}./s1);
+    tan(v{i}./s1);
+    exp(v{i}./s1);
+    log(v{i}./s1);
+    log10(v{i}./s1);
+    log2(v{i}./s1);
+    mean(v{i});
+    std(v{i});
+    sum(v{i});
+end
+
+v{3}.*s1;
+v{3}.*s2;
+v{3}./s1;
+v{3}./s2;
+
+%% Combine with the UC class
+k = DimVar(UC(16,2),'W/m-K');
+L = DimVar(UC(5,1),'mm');
+A = DimVar(UC(10,1),'cm^2');
+DT = DimVar(500,'R') - DimVar(200,'K');
+
+Q = k*A/L*DT;
+fprintf('Q = %s\n',num2str(Q,4));
