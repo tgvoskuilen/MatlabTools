@@ -527,6 +527,12 @@ classdef DimVar
         end
         
         %------------------------------------------------------------------
+        function y = uplus(A)
+            % Unary + operator
+            y = A;
+        end
+        
+        %------------------------------------------------------------------
         function y = times(A, B)
             % Multiplcation operator
             [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);

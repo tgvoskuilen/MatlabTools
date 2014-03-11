@@ -343,6 +343,12 @@ classdef UC
         end
         
         %------------------------------------------------------------------
+        function pos = uplus(A)
+            % Unary + operator
+            pos = A;
+        end
+        
+        %------------------------------------------------------------------
         function bool = eq(A, B)
             % Equality operator - compares value only
             if ~isa(A,'UC')
