@@ -52,10 +52,11 @@ However, these commands are valid:
 If you want to do a unit conversion, for example to convert Q from
 the example above into BTU/hr, you can do
 
-    Qbtu = Q / DimVar(1,'BTU/hr');
+    Qbtu = Q.Convert('BTU/hr');
     
 and Qbtu will be a dimensionless number whose magnitude is now in
-BTU/hr.
+BTU/hr. If you attempt to convert Q to meters, it will generate an
+error.
 
 You can combine this class with the features of the `@UC` 
 class below as well. For example:

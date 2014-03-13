@@ -27,12 +27,8 @@ DT2 = DimVar(500,'R') - DimVar(200,'K');
 Q1 = k1*A1/L2*DT1;
 Q2 = k2*A2/L2*DT2;
 
-k = DimVar(2,'BTU-in/hr-ft^2-F');
-A = DimVar(1,'cm2');
-L = DimVar(1,'in');
-DT = DimVar(300,'K') - DimVar(0,'F');
-Q = k*A*DT/L
-    fprintf('Q = %s\n',num2str(Q,4));
+%% Basic unit conversions
+Q1_btu_per_hr = Q1.Convert('BTU/hr');
 
 %% Operation checks
 try

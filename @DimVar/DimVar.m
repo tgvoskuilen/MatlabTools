@@ -500,6 +500,24 @@ classdef DimVar
             end
  
         end
+        
+        %------------------------------------------------------------------
+        % Unit converter
+        %------------------------------------------------------------------
+        function val = Convert(self, unitStr)
+            % Convert obj to a value with different units
+            
+            % First make sure obj and unitStr are consistent
+            [u,f] = DimVar.ReadUnitStr(unitStr);
+            [Av,Au] = DimVar.EqualizeInputs(self);
+            DimVar.CheckUnits(Au,{u},'conversion');
+            if length(f) == 2
+                val = (Av - f(2)) ./ f(1);
+            else
+                val = Av./f;
+            end
+            val = reshape(val,size(self));
+        end
 
         %------------------------------------------------------------------
         % Operator overloading
