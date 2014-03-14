@@ -80,8 +80,8 @@ classdef UC
                 Ae = reshape([A.Err],size(A));
             else
                 Av = A;
-                Ae = 0;
-                Ah = -1;
+                Ae = zeros(size(A));
+                Ah = -ones(size(A));
             end
             
             if exist('B','var')
@@ -91,8 +91,8 @@ classdef UC
                     Be = reshape([B.Err],size(B));
                 else
                     Bv = B;
-                    Be = 0;
-                    Bh = -1;
+                    Be = zeros(size(B));
+                    Bh = -ones(size(B));
                 end
             end
         end

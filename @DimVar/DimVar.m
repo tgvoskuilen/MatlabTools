@@ -70,7 +70,7 @@ classdef DimVar
     end
     
     %----------------------------------------------------------------------
-    properties %(Access = private)
+    properties (Access = private)
         Unit = [0 0 0 0 0];  % Unit array [kg m s K kmol]
     end
     
@@ -78,7 +78,7 @@ classdef DimVar
     properties (Dependent = true, SetAccess = private)
         UnitStr  % String representation of unit
     end
-    
+        
     %----------------------------------------------------------------------
     properties (Constant, Access = private)
         % uTable - Structure of recognized units. To add new units, add
@@ -195,11 +195,11 @@ classdef DimVar
                       'Arguments to %s() must be dimensionless',...
                       func2str(f));
             end
-            y = DimVar(f(Av));
+            y = f(Av);
         end
         
         %------------------------------------------------------------------
-        function U = CombineUnits(Au,Bu,f,checkEqual,opStr)
+        function [U,dims] = CombineUnits(Au,Bu,f,checkEqual,opStr)
             % Combine two unit cell arrays
             
             if ~exist('checkEqual','var')
@@ -223,6 +223,8 @@ classdef DimVar
                 error('DimVar:CombineUnits',...
                       'Unequal array size');
             end
+            
+            dims = ~DimVar.IsDimless(U);
         end
         
         %------------------------------------------------------------------
@@ -241,7 +243,8 @@ classdef DimVar
                 Au = reshape({A.Unit},size(A));
             else
                 Av = A;
-                Au = {[0 0 0 0 0]};
+                Au = cell(size(A));
+                Au = cellfun(@(x) [0 0 0 0 0],Au,'UniformOutput',false);
             end
             
             if exist('B','var')
@@ -250,7 +253,8 @@ classdef DimVar
                     Bu = reshape({B.Unit},size(B));
                 else
                     Bv = B;
-                    Bu = {[0 0 0 0 0]};
+                    Bu = cell(size(B));
+                    Bu = cellfun(@(x) [0 0 0 0 0],Bu,'UniformOutput',false);
                 end
             end
         end
@@ -518,6 +522,15 @@ classdef DimVar
             end
             val = reshape(val,size(self));
         end
+        
+        function val = NoUnits(self)
+            % Remove unit type and return just SI value
+            
+            % First make sure obj and unitStr are consistent
+            [Av,~] = DimVar.EqualizeInputs(self);
+            val = reshape(Av,size(self));
+        end
+
 
         %------------------------------------------------------------------
         % Operator overloading
@@ -554,16 +567,24 @@ classdef DimVar
         function y = times(A, B)
             % Multiplcation operator
             [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
-            Yu = DimVar.CombineUnits(Au,Bu,@(x,y) x+y);
-            y = DimVar(Av.*Bv, Yu);
+            [Yu,dims] = DimVar.CombineUnits(Au,Bu,@(x,y) x+y);
+            if dims
+                y = DimVar(Av.*Bv, Yu);
+            else
+                y = Av.*Bv;
+            end
         end
         
         %------------------------------------------------------------------
         function y = rdivide(A, B)
             % Division operator
             [Av,Au,Bv,Bu] = DimVar.EqualizeInputs(A,B);
-            Yu = DimVar.CombineUnits(Au,Bu,@(x,y) x-y);
-            y = DimVar(Av./Bv, Yu);
+            [Yu,dims] = DimVar.CombineUnits(Au,Bu,@(x,y) x-y);
+            if dims
+                y = DimVar(Av./Bv, Yu);
+            else
+                y = Av./Bv;
+            end
         end
         
         %------------------------------------------------------------------
@@ -579,6 +600,7 @@ classdef DimVar
             Bvc = arrayfun(@(x) x, Bv, 'UniformOutput',false);
             Yu = DimVar.CombineUnits(Au,Bvc,@(x,y) x.*y);
             
+            % May not need to check dims
             y = DimVar(Av.^Bv, Yu);
         end
        
