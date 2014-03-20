@@ -67,6 +67,7 @@ classdef UC
             y = UC(f([x.Value]), dfdx([x.Value]).*[x.Err]);
             for i = 1:length(x)
                 y(i).Name = strcat(func2str(f),'(',x(i).Name,')');
+                y(i).Contrib = x(i).Contrib;
             end
             y = reshape(y,size(x)); 
         end
@@ -224,6 +225,12 @@ classdef UC
             end
         end
 
+        function val = double(self)
+            % Define conversion to double
+            val = [self.Value];
+            val = reshape(val,size(self));
+        end
+        
         %------------------------------------------------------------------
         % Operator overloading
         %------------------------------------------------------------------
@@ -442,6 +449,12 @@ classdef UC
         function y = cot(x)
             % Cotangent function
             y = UC.UnaryFunction(x, @cot, @(v) csc(v).^2);
+        end
+        
+        %------------------------------------------------------------------
+        function y = atan(x)
+            % Inverse tangent function
+            y = UC.UnaryFunction(x, @atan, @(v) 1./(1+(v).^2));
         end
         
         %------------------------------------------------------------------

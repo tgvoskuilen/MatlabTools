@@ -530,6 +530,11 @@ classdef DimVar
             [Av,~] = DimVar.EqualizeInputs(self);
             val = reshape(Av,size(self));
         end
+        
+        function val = double(self)
+            % Define conversion to double
+            val = self.NoUnits();
+        end
 
 
         %------------------------------------------------------------------
