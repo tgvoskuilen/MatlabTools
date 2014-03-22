@@ -5,7 +5,7 @@ Installation
 ---------------------------
 
 ### Using SSH or Linux
-Use an SSH client to log in to a Linux server if you are not one one, or just
+Use an SSH client to log in to a Linux server if you are not on one, or just
 open a terminal. To clone this repository into your Matlab folder (assuming
 it is at `~/MATLAB`), enter the following commands:
 
@@ -25,8 +25,9 @@ following line to your `startup.m` file in your default Matlab path (create
     
 ### Using the GitHub Windows Client
 Download [GitHub for Windows](http://windows.github.com) and install it. Click
-the 'Clone in Desktop' button on the right to clone it onto your local machine.
-The repository will be saved in your `GitHub` folder by default.
+[Clone in Desktop](github-windows://openRepo/https://github.com/tgvoskuilen/MatlabTools) 
+to clone this repository onto your local machine. The repository will be saved 
+in your `GitHub` folder by default.
 
 To update your version of the code, use the 'Sync' button in the GitHub program.
 
@@ -36,10 +37,10 @@ following line to your `startup.m` file in your default Matlab path (create
     
     addpath(fullfile(fileparts(userpath),'GitHub','MatlabTools'));
 
-### Using the Source ZIP Download
-Click the link on the right to download the source zip file. Extract its contents
-to your default Matlab folder and rename the newly created `MatlabTools-master`
-folder to `MatlabTools`.
+### Using the Source Download
+Download the [source zip file](https://github.com/tgvoskuilen/MatlabTools/archive/master.zip). 
+Extract its contents to your default Matlab folder and rename the newly created 
+`MatlabTools-master` folder to `MatlabTools`.
 
 To update your version of the code, delete the existing `MatlabTools` folder and
 repeat the above procedure.
