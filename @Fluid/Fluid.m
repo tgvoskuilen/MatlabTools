@@ -148,7 +148,7 @@ classdef Fluid
             if any(match)
                 GasID = find(match,1);
             else
-                error('Invalid gas string: "%s"',gas);
+                error('Invalid gas string: "%s"',UserInputs{1});
             end
 
             %NIST Database URL Constants

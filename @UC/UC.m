@@ -18,7 +18,7 @@ classdef UC
     %
     % would propogate the original uncertainty through to z and w.
     
-    % Copyright (c) 2012, Tyler Voskuilen
+    % Copyright (c) 2014, Tyler Voskuilen
     % All rights reserved.
     % 
     % Redistribution and use in source and binary forms, with or without 
@@ -171,6 +171,12 @@ classdef UC
         %------------------------------------------------------------------
         %Constructor function
         function uc = UC(val, err, name, hash)
+            [~,fldr] = fileparts(pwd);
+            if strcmpi(fldr,'@UC')
+                error('MATLAB:UC',...
+                      'Do not work inside the "@UC" folder');
+            end
+            
             if nargin ~= 0
                 hash_stream = RandStream('mt19937ar','Seed',sum(100*clock));
                 if nargin >= 2
@@ -208,6 +214,7 @@ classdef UC
                 for i=1:numel(val)
                     uc(i).Value = val(i);
                     uc(i).Err = err(i);
+                    tmp = val(i)+err(i); %#ok<NASGU> %make sure they are compatible
                     uc(i).Err_r = 0;
                     uc(i).Hash = hash(i);
                     if isempty(name)

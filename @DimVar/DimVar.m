@@ -448,6 +448,11 @@ classdef DimVar
         %------------------------------------------------------------------
         function dv = DimVar(val, unit, isrel)
             % Constructor for a dimensioned variable
+            [~,fldr] = fileparts(pwd);
+            if strcmpi(fldr,'@DimVar')
+                error('MATLAB:DimVar',...
+                      'Do not work inside the "@DimVar" folder');
+            end
             
             if nargin >= 2
                 % Check if input specifies a relative quantity
