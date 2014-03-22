@@ -25,7 +25,7 @@ following line to your `startup.m` file in your default Matlab path (create
     
 ### Using the GitHub Windows Client
 Download [GitHub for Windows](http://windows.github.com) and install it. Click
-[Clone in Desktop](github-windows://openRepo/https://github.com/tgvoskuilen/MatlabTools) 
+the Clone in Desktop button on the right
 to clone this repository onto your local machine. The repository will be saved 
 in your `GitHub` folder by default.
 
