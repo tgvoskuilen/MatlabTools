@@ -1,26 +1,55 @@
 Matlab Tools
 ============
 
-My custom matlab scripts and classes. To clone this repository into your
-Matlab folder (assuming it is at `~/Personal/MATLAB`), enter the following
-commands at a UNIX shell (check that you have `git` installed first by typing
-`which git`):
+Installation
+---------------------------
 
-    cd ~/Personal/MATLAB
+### Using SSH or Linux
+Use an SSH client to log in to a Linux server if you are not one one, or just
+open a terminal. To clone this repository into your Matlab folder (assuming
+it is at `~/MATLAB`), enter the following commands:
+
+    cd ~/MATLAB
     git clone git://github.com/tgvoskuilen/MatlabTools.git
     
-To update your versions of the code if you have already cloned the repository:
+To update your version of the code if you have already cloned the repository:
 
-    cd ~/Personal/MATLAB/MatlabTools
+    cd ~/MATLAB/MatlabTools
     git pull
-
-To make this folder automatically on your Matlab path, add the following line
-to `startup.m` in your Matlab folder (create the file if it does not exist)
-
+    
+To have the MatlabTools folder added to your Matlab path by default, add the
+following line to your `startup.m` file in your default Matlab path (create
+`startup.m` if it does not exist):
+    
     addpath(fullfile(fileparts(userpath),'MATLAB','MatlabTools'));
+    
+### Using the GitHub Windows Client
+Download [GitHub for Windows](http://windows.github.com) and install it. Click
+the 'Clone in Desktop' button on the right to clone it onto your local machine.
+The repository will be saved in your `GitHub` folder by default.
 
-You can also clone the repo using Git for Windows, but the above instructions
-for `startup.m` may be different depending on where you save the files.
+To update your version of the code, use the 'Sync' button in the GitHub program.
+
+To have the MatlabTools folder added to your Matlab path by default, add the
+following line to your `startup.m` file in your default Matlab path (create
+`startup.m` if it does not exist):
+    
+    addpath(fullfile(fileparts(userpath),'GitHub','MatlabTools'));
+
+### Using the Source ZIP Download
+Click the link on the right to download the source zip file. Extract its contents
+to your default Matlab folder and rename the newly created `MatlabTools-master`
+folder to `MatlabTools`.
+
+To update your version of the code, delete the existing `MatlabTools` folder and
+repeat the above procedure.
+
+To have the MatlabTools folder added to your Matlab path by default, add the
+following line to your `startup.m` file in your default Matlab path (create
+`startup.m` if it does not exist):
+    
+    addpath(fullfile(fileparts(userpath),'MATLAB','MatlabTools'));
+    
 
 Classes
 --------------------------
