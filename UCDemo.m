@@ -40,11 +40,18 @@ clc
 
 fprintf('Testing variable construction\n');
 x = UC([10 12 -12],[1 3 4],'x');  %vector values, vector errors
-y = UC([1 2 3 4], 2, 'y');        %vector values, scalar error
+y = UC([1 2 3 4]', 2, 'y');       %vector values, scalar error
 z = UC(15, 10, 'z');              %scalar value, scalar error
+m = UC(10*ones(4,4),1,'m');       %matrix values, scalar error
+p = UC(8*ones(4,4),ones(4,4),'p');%matrix values, matrix error
 s = 4.5;                          %a normal scalar (not a UC)
 
 fprintf('Testing basic math and vector operations\n');
+mp = y*x;
+l = mp*m;
+q = p*m;
+rhs = p*y;
+a = y(1)*(z+15);
 c = x + z;
 d = x - z;
 e = x * z;

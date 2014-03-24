@@ -64,7 +64,7 @@ classdef UC
         
         %------------------------------------------------------------------
         function y = UnaryFunction(x,f,dfdx)
-            y = UC(f([x.Value]), dfdx([x.Value]).*[x.Err]);
+            y = UC(f([x.Value]), abs(dfdx([x.Value])).*[x.Err]);
             for i = 1:length(x)
                 y(i).Name = strcat(func2str(f),'(',x(i).Name,')');
                 y(i).Contrib = x(i).Contrib;
@@ -109,7 +109,6 @@ classdef UC
             % Determine the fractional contribution to uncertainty from separate inputs
             
             y = obj;
-                       
             for i = 1:numel(y)
                 
                 if i > numel(A)
@@ -137,8 +136,30 @@ classdef UC
                     BName = num2str(Bi);
                 end
                 
-                y(i).Name = strcat('(',AName,opString,BName,')');
-
+                Ap = strfind(AName,'+');
+                Am = strfind(AName,'m');
+                Bp = strfind(BName,'+');
+                Bm = strfind(BName,'m');
+                
+                switch opString
+                    case {'+','-'}
+                        y(i).Name = strcat(AName,opString,BName);
+                    otherwise
+                        if isempty(Ap) && isempty(Am)
+                            ANameGroup = AName;
+                        else
+                            ANameGroup = strcat('(',AName,')');
+                        end
+                        
+                        if isempty(Bp) && isempty(Bm)
+                            BNameGroup = BName;
+                        else
+                            BNameGroup = strcat('(',BName,')');
+                        end
+                        
+                        y(i).Name = strcat(ANameGroup,opString,BNameGroup);
+                end
+                
                 if isnan(fA(i)) || isnan(fB(i))
                     y(i).Contrib = {};
                 elseif fA(i) == 0 && fB(i) ~= 0
@@ -146,6 +167,7 @@ classdef UC
                 elseif fB(i) == 0 && fA(i) ~= 0
                     y(i).Contrib = Ai.Contrib;
                 else
+
                     fyFull = [cell2mat(Ai.Contrib(2,:)).*fA(i) ...
                               cell2mat(Bi.Contrib(2,:)).*fB(i)];
                     yContribFull = [Ai.Contrib(1,:) Bi.Contrib(1,:)];
@@ -178,7 +200,7 @@ classdef UC
             end
             
             if nargin ~= 0
-                hash_stream = RandStream('mt19937ar','Seed',sum(100*clock));
+                hash_stream = RandStream('mt19937ar','Seed','shuffle');
                 if nargin >= 2
                     %Read values
                     if ~isequal(size(val),size(err))
@@ -206,7 +228,7 @@ classdef UC
                     name = '';
                 end
 
-                if length(hash) ~= length(val)
+                if numel(hash) ~= numel(val)
                     hash = ones(size(val)).*hash;
                 end
                 
@@ -221,7 +243,7 @@ classdef UC
                         uc(i).Name = num2str(val(i));
                     else
                         if numel(val) > 1
-                            uc(i).Name=strcat(name,'(',num2str(i),')');
+                            uc(i).Name=strcat(name,'[',num2str(i),']');
                         else
                             uc(i).Name=name;
                         end
@@ -393,21 +415,56 @@ classdef UC
         end
         
         %------------------------------------------------------------------
-        function y = mtimes(a, b)
-            % Vector component-wise multiplcation
-            y = a .* b; %mtimes calls times (so * calls .*)
+        function y = mtimes(A, B)
+            % Matrix/vector multiplcation ('*' operator)
+            
+            % More efficient, but does not calculate Contrib
+%             
+%             [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
+%             
+%             yv = Av*Bv;
+%             ye = sqrt((Av.^2)*(Be.^2) + (Ae.^2)*(Bv.^2));
+%             y = UC(yv, ye, '', Ah*Bh);
+%             
+%             % Fractional contributions, fA + fB = 1
+%             fA = ((Ae.^2)*(Bv.^2)) ./ ye.^2;
+%             fB = ((Av.^2)*(Be.^2)) ./ ye.^2;
+
+            
+
+            % Loop approach calculates contrib
+            sA = size(A);
+            sB = size(B);
+            
+            if length(sA) > 2 || length(sB) > 2
+                error('UC:mtimes',...
+                      'Inputs must be 2-D or lower');
+            end
+            
+            y(1:sA(1),1:sB(2)) = UC;
+            for i = 1:sA(1)
+                for j = 1:sB(2)
+                    y(i,j) = A(i,1).*B(1,j);
+                    for k = 2:sA(2)
+                        y(i,j) = y(i,j) + A(i,k).*B(k,j);
+                    end
+                end
+            end
         end
         
         %------------------------------------------------------------------
-        function y = mrdivide(a, b)
-            % Vector component-wise division
-            y = a ./ b; %mrdivide calls rdivide (so / calls ./)
+        function y = mrdivide(A, B) %#ok<STOUT,INUSD,MANU>
+            % Matrix division
+            % y = A * inv(B)
+            error('UC:mrdivide',...
+                  'UC matrix inversion is not yet supported');
         end
         
         %------------------------------------------------------------------
-        function y = mpower(a, b)
-            % Vector component-wise powers
-            y = a .^ b; %mpower calls power (so ^ calls .^)
+        function y = mpower(A, B) %#ok<STOUT,INUSD,MANU>
+            % Matrix power operator
+            error('UC:mpower',...
+                  'UC matrix power is not yet supported');
         end
         
         %------------------------------------------------------------------
@@ -425,13 +482,13 @@ classdef UC
         %------------------------------------------------------------------
         function y = cos(x)
             % Cosine function
-            y = UC.UnaryFunction(x, @cos, @(v) abs(sin(v)));
+            y = UC.UnaryFunction(x, @cos, @sin );
         end
         
         %------------------------------------------------------------------
         function y = sin(x)
             % Sine function
-            y = UC.UnaryFunction(x, @sin, @(v) abs(cos(v)));
+            y = UC.UnaryFunction(x, @sin, @cos );
         end
         
         %------------------------------------------------------------------
@@ -443,13 +500,13 @@ classdef UC
         %------------------------------------------------------------------
         function y = csc(x)
             % Cosecant function
-            y = UC.UnaryFunction(x, @csc, @(v) abs(csc(v).*cot(x)));
+            y = UC.UnaryFunction(x, @csc, @(v) csc(v).*cot(x));
         end
         
         %------------------------------------------------------------------
         function y = sec(x)
             % Secant function
-            y = UC.UnaryFunction(x, @sec, @(v) abs(sec(v).*tan(x)));
+            y = UC.UnaryFunction(x, @sec, @(v) sec(v).*tan(x));
         end
         
         %------------------------------------------------------------------
@@ -461,7 +518,37 @@ classdef UC
         %------------------------------------------------------------------
         function y = atan(x)
             % Inverse tangent function
-            y = UC.UnaryFunction(x, @atan, @(v) 1./(1+(v).^2));
+            y = UC.UnaryFunction(x, @atan, @(v) 1./(1+v.^2));
+        end
+         
+        %------------------------------------------------------------------
+        function y = asin(x)
+            % Inverse sine function
+            y = UC.UnaryFunction(x, @asin, @(v) 1./sqrt(1-v.^2));
+        end
+        
+        %------------------------------------------------------------------
+        function y = acos(x)
+            % Inverse cosine function
+            y = UC.UnaryFunction(x, @acos, @(v) 1./sqrt(1-v.^2));
+        end
+        
+        %------------------------------------------------------------------
+        function y = asec(x)
+            % Inverse secant function
+            y = UC.UnaryFunction(x, @asec, @(v) 1./(v.*sqrt(v.^2-1)));
+        end
+        
+        %------------------------------------------------------------------
+        function y = acsc(x)
+            % Inverse cosecant function
+            y = UC.UnaryFunction(x, @acsc, @(v) 1./(v.*sqrt(v.^2-1)));
+        end
+        
+        %------------------------------------------------------------------
+        function y = acot(x)
+            % Inverse cotangent function
+            y = UC.UnaryFunction(x, @acot, @(v) 1./(1+v.^2));
         end
         
         %------------------------------------------------------------------

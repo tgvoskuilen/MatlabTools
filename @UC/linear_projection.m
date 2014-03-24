@@ -117,8 +117,8 @@ E = [dbdy.*[y.Err] dbdx.*[x.Err]];
 %Assume the points are self-correlated
 %This has to be redone with a sparse matrix or a loop...
 Rc = eye(length(x)+length(y));
-Rc(1:length(y),1:length(y))=1;
-Rc(length(y)+1:length(x)+length(y),length(y)+1:length(x)+length(y))=1;
+%Rc(1:length(y),1:length(y))=0;
+%Rc(length(y)+1:length(x)+length(y),length(y)+1:length(x)+length(y))=0;
 
 
 
