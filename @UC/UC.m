@@ -453,18 +453,20 @@ classdef UC
         end
         
         %------------------------------------------------------------------
-        function y = mrdivide(A, B) %#ok<STOUT,INUSD,MANU>
+        function y = mrdivide(A, B)
             % Matrix division
             % y = A * inv(B)
-            error('UC:mrdivide',...
-                  'UC matrix inversion is not yet supported');
+            y = A ./ B;
+            %error('UC:mrdivide',...
+            %      'UC matrix inversion is not yet supported');
         end
         
         %------------------------------------------------------------------
-        function y = mpower(A, B) %#ok<STOUT,INUSD,MANU>
+        function y = mpower(A, B)
             % Matrix power operator
-            error('UC:mpower',...
-                  'UC matrix power is not yet supported');
+            y = A .^ B;
+            %error('UC:mpower',...
+            %      'UC matrix power is not yet supported');
         end
         
         %------------------------------------------------------------------
