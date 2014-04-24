@@ -46,26 +46,19 @@ classdef UC
 
 
     %----------------------------------------------------------------------
-    properties %(SetAccess = protected) %You may not change these
-        Name = '';  % Variable name
-        Value = 0;  % Value
-        %Err = 0;    % Value uncertainty
-        %Contrib = {}; % List of contributors to this variable
-        %Hash = -1;  % Hash value (unique ID number for this set of data)
-        
-        Inputs = {};
-        dydx = [];
-        e = [];
+    properties (SetAccess = protected) %You may not change these
+        Name = '';   % Variable name
+        Value = 0;   % Value
+        Inputs = {}; % Cell array of inputs to this variable
+        dydx = [];   % Array of derivatives for each input
+        e = [];      % Array of error scalars for each input
     end
     
     properties (Dependent = true) %You may not change these
         Err;    % Value uncertainty (calculated from e and dydx vectors)
     end
     
-    %----------------------------------------------------------------------
-    properties (Access = private)
-    %    Err_r = 0;  % Random error (currently not used)
-    end
+
     %----------------------------------------------------------------------
     % Private static functions
     methods(Static) %, Access = private)
@@ -156,15 +149,7 @@ classdef UC
         end
         
     end
-    
-    
-    %----------------------------------------------------------------------
-    methods (Access = private)
-        
 
-        
-    end
-    
     %----------------------------------------------------------------------
     %Define class methods
     methods
@@ -255,11 +240,6 @@ classdef UC
             end
         end
 
-        function val = double(self)
-            % Define conversion to double
-            val = [self.Value];
-            val = reshape(val,size(self));
-        end
         
         %------------------------------------------------------------------
         % Operator overloading
@@ -342,6 +322,13 @@ classdef UC
             % Negation operator
             neg = A;
             neg.Value = -neg.Value;
+        end
+        
+        %------------------------------------------------------------------
+        function val = double(self)
+            % Define conversion to double
+            val = [self.Value];
+            val = reshape(val,size(self));
         end
         
         %------------------------------------------------------------------
