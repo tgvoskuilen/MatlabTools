@@ -65,7 +65,19 @@ c = UC(95,2,'c');
 % These should be the same if correlations are handled properly
 p1 = b*(a-c) %#ok<NOPTS>
 p2 = a*b - c*b %#ok<NOPTS>
+i1 = a*b;
+i2 = c*b;
+p3 = i1-i2 %#ok<NOPTS>
 
+% Slightly more complicated self-correlation test
+d = UC(1,0.8,'d');
+n1 = UC(1,0.1,'n1');
+n2 = UC(-1,0.1,'n2');
+x1 = atan(n1/d)/pi + 0.5;
+x2 = atan(n2/d)/pi + 0.5;
+nu = x1 - x2;
+nu.Inputs
+nu.dydx  %dnu/dd should be -1/pi (-0.3183)
 
 fprintf('Testing error propogation through several operations\n');
 v1 = sqrt(x + z);
