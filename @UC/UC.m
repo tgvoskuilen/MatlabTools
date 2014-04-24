@@ -109,8 +109,8 @@ classdef UC
                 Ai = reshape({A.Inputs},size(A));
             else
                 Av = num2cell(A);
-                Ae = num2cell(zeros(size(A)));
-                Ad = num2cell(ones(size(A)));
+                Ae = cell(size(A));
+                Ad = cell(size(A));
                 Ai = cell(size(A));
             end
             
@@ -121,8 +121,8 @@ classdef UC
                 Bi = reshape({B.Inputs},size(B));
             else
                 Bv = num2cell(B);
-                Be = num2cell(zeros(size(B)));
-                Bd = num2cell(ones(size(B)));
+                Be = cell(size(B));
+                Bd = cell(size(B));
                 Bi = cell(size(B));
             end
             
