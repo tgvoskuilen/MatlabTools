@@ -59,15 +59,15 @@ if length(y) ~= n
 end
 
 if ~isa(x,'UC')
-    x = UC(x);
+    x = UC(x,0,'x');
 end
 
 if ~isa(y,'UC')
-    y = UC(y);
+    y = UC(y,0,'y');
 end
 
 if ~isa(xp,'UC')
-    xp = UC(xp);
+    xp = UC(xp,0,'xp');
 end
 
 %Perform x shift to set 0 at xp

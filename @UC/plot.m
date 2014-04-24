@@ -28,10 +28,10 @@ function [hData, hBarX, hBarY] = plot(x,y,varargin)
     % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
     if ~isa(x,'UC')
-        x = UC(x);
+        x = UC(x,0,'x');
     end
     if ~isa(y,'UC')
-        y = UC(y);
+        y = UC(y,0,'y');
     end
     
     %[hData, hEx, hEy] = errorbars_xy(gca,[x.Value],[y.Value],...

@@ -46,56 +46,113 @@ classdef UC
 
 
     %----------------------------------------------------------------------
-    properties (SetAccess = protected) %You may not change these
+    properties %(SetAccess = protected) %You may not change these
         Name = '';  % Variable name
         Value = 0;  % Value
-        Err = 0;    % Value uncertainty
-        Contrib = {}; % List of contributors to this variable
-        Hash = -1;  % Hash value (unique ID number for this set of data)
+        %Err = 0;    % Value uncertainty
+        %Contrib = {}; % List of contributors to this variable
+        %Hash = -1;  % Hash value (unique ID number for this set of data)
+        
+        Inputs = {};
+        dydx = [];
+        e = [];
+    end
+    
+    properties (Dependent = true) %You may not change these
+        Err;    % Value uncertainty (calculated from e and dydx vectors)
     end
     
     %----------------------------------------------------------------------
     properties (Access = private)
-        Err_r = 0;  % Random error (currently not used)
+    %    Err_r = 0;  % Random error (currently not used)
     end
     %----------------------------------------------------------------------
     % Private static functions
-    methods(Static, Access = private)
+    methods(Static) %, Access = private)
         
         %------------------------------------------------------------------
-        function y = UnaryFunction(x,f,dfdx)
-            y = UC(f([x.Value]), abs(dfdx([x.Value])).*[x.Err]);
-            for i = 1:length(x)
-                y(i).Name = strcat(func2str(f),'(',x(i).Name,')');
-                y(i).Contrib = x(i).Contrib;
-            end
-            y = reshape(y,size(x)); 
+        function y = UnaryFunction(a,f,dfda)
+            Av = reshape({a.Value},size(a));
+            Ad = reshape({a.dydx},size(a));
+            
+            % Error vector and input vector do not change
+            Ye = reshape({a.e},size(a));
+            Yi = reshape({a.Inputs},size(a));
+            
+            % Value and derivative vector do change
+            Yv = cellfun(f, Av, 'UniformOutput',false);
+            Yd = cellfun(@(a,dadx) dfda(a).*dadx, Av, Ad,'UniformOutput',false);
+                
+            y = UC(Yv,Ye,Yi,Yd);
         end
         
         %------------------------------------------------------------------
-        function [Av,Ae,Ah,Bv,Be,Bh] = EqualizeInputs(A,B)
-            % Extract value and error arrays from inputs
+        function y = BinaryFunction(a,b,f,dfdx)
+            % Extract cell arrays from a and b inputs
+            [Av,Ad,Bv,Bd,Yi,Ye] = UC.EqualizeInputs(a,b);
+            
+            % Chain rule
+            Yd = cellfun(dfdx, Av,Ad,Bv,Bd,'UniformOutput',false);
+            Yv = cellfun(f, Av,Bv,'UniformOutput',false);
+            
+            y = UC(Yv,Ye,Yi,Yd);
+        end
+        
+        %------------------------------------------------------------------
+        function [Av,Adn,Bv,Bdn,Yi,Ye] = EqualizeInputs(A,B)
+            % Extract value, error, and derivative arrays from inputs
+
             if isa(A,'UC')
-                Av = reshape([A.Value],size(A));
-                Ah = reshape([A.Hash],size(A));
-                Ae = reshape([A.Err],size(A));
+                Av = reshape({A.Value},size(A));
+                Ae = reshape({A.e},size(A));
+                Ad = reshape({A.dydx},size(A));
+                Ai = reshape({A.Inputs},size(A));
             else
-                Av = A;
-                Ae = zeros(size(A));
-                Ah = -ones(size(A));
+                Av = num2cell(A);
+                Ae = num2cell(zeros(size(A)));
+                Ad = num2cell(ones(size(A)));
+                Ai = cell(size(A));
             end
             
-            if exist('B','var')
-                if isa(B,'UC')
-                    Bv = reshape([B.Value],size(B));
-                    Bh = reshape([B.Hash],size(B));
-                    Be = reshape([B.Err],size(B));
-                else
-                    Bv = B;
-                    Be = zeros(size(B));
-                    Bh = -ones(size(B));
-                end
+            if isa(B,'UC')
+                Bv = reshape({B.Value},size(B));
+                Be = reshape({B.e},size(B));
+                Bd = reshape({B.dydx},size(B));
+                Bi = reshape({B.Inputs},size(B));
+            else
+                Bv = num2cell(B);
+                Be = num2cell(zeros(size(B)));
+                Bd = num2cell(ones(size(B)));
+                Bi = cell(size(B));
             end
+            
+            % Expand cell arrays to match sizes
+            if all(size(A) == 1) && ~all(size(B) == 1) % expand A
+                Av = cellfun(@(x) Av{1}, Bv, 'UniformOutput',false);
+                Ae = cellfun(@(x) Ae{1}, Bv, 'UniformOutput',false);
+                Ad = cellfun(@(x) Ad{1}, Bv, 'UniformOutput',false);
+                Ai = cellfun(@(x) Ai{1}, Bv, 'UniformOutput',false);
+            elseif all(size(B) == 1) && ~all(size(A) == 1) % expand B
+                Bv = cellfun(@(x) Bv{1}, Av, 'UniformOutput',false);
+                Be = cellfun(@(x) Be{1}, Av, 'UniformOutput',false);
+                Bd = cellfun(@(x) Bd{1}, Av, 'UniformOutput',false);
+                Bi = cellfun(@(x) Bi{1}, Av, 'UniformOutput',false);
+            end
+            
+            % Get list of unique inputs for each component
+            [Yi,~,ic] = cellfun(@(a,b) unique([a, b],'stable'),Ai,Bi,'UniformOutput',false);
+
+            % Expand e and d vectors
+            Adn = cellfun(@(c) zeros(size(c)),Yi,'UniformOutput',false);
+            Bdn = cellfun(@(c) zeros(size(c)),Yi,'UniformOutput',false);
+            Ye = cellfun(@(c) zeros(size(c)),Yi,'UniformOutput',false);
+            for i = 1:numel(Ad)
+                Adn{i}(ic{i}(1:numel(Ad{i}))) = Ad{i};
+                Bdn{i}(ic{i}(numel(Ad{i})+1:end)) = Bd{i};
+                Ye{i}(ic{i}(1:numel(Ae{i}))) = Ae{i};
+                Ye{i}(ic{i}(numel(Ae{i})+1:end)) = Be{i};
+            end
+
         end
         
     end
@@ -104,86 +161,7 @@ classdef UC
     %----------------------------------------------------------------------
     methods (Access = private)
         
-        %------------------------------------------------------------------
-        function y = AssignContrib(obj, A, B, fA, fB, opString)
-            % Determine the fractional contribution to uncertainty from separate inputs
-            
-            y = obj;
-            for i = 1:numel(y)
-                
-                if i > numel(A)
-                    Ai = A;
-                else
-                    Ai = A(i);
-                end
-                
-                if i > numel(B)
-                    Bi = B;
-                else
-                    Bi = B(i);
-                end
 
-                % Technically the '^' operator doesn't need (), but it's
-                % more clear that way about order of operations
-                if isa(Ai,'UC')
-                    AName = Ai.Name;
-                else
-                    AName = num2str(Ai);
-                end
-                if isa(Bi,'UC')
-                    BName = Bi.Name;
-                else
-                    BName = num2str(Bi);
-                end
-                
-                Ap = strfind(AName,'+');
-                Am = strfind(AName,'m');
-                Bp = strfind(BName,'+');
-                Bm = strfind(BName,'m');
-                
-                switch opString
-                    case {'+','-'}
-                        y(i).Name = strcat(AName,opString,BName);
-                    otherwise
-                        if isempty(Ap) && isempty(Am)
-                            ANameGroup = AName;
-                        else
-                            ANameGroup = strcat('(',AName,')');
-                        end
-                        
-                        if isempty(Bp) && isempty(Bm)
-                            BNameGroup = BName;
-                        else
-                            BNameGroup = strcat('(',BName,')');
-                        end
-                        
-                        y(i).Name = strcat(ANameGroup,opString,BNameGroup);
-                end
-                
-                if isnan(fA(i)) || isnan(fB(i))
-                    y(i).Contrib = {};
-                elseif fA(i) == 0 && fB(i) ~= 0
-                    y(i).Contrib = Bi.Contrib;
-                elseif fB(i) == 0 && fA(i) ~= 0
-                    y(i).Contrib = Ai.Contrib;
-                else
-
-                    fyFull = [cell2mat(Ai.Contrib(2,:)).*fA(i) ...
-                              cell2mat(Bi.Contrib(2,:)).*fB(i)];
-                    yContribFull = [Ai.Contrib(1,:) Bi.Contrib(1,:)];
-                    
-                    y(i).Contrib = {};
-                    Nc = length(unique(yContribFull));
-                    y(i).Contrib(1,:) = unique(yContribFull);
-                    y(i).Contrib(2,:) = num2cell(zeros(1,Nc));
-
-                    for j = 1:Nc
-                        y(i).Contrib{2,j} = ...
-                            sum(fyFull(strcmpi(yContribFull,y(i).Contrib{1,j})));
-                    end
-                end
-            end
-        end 
         
     end
     
@@ -192,7 +170,7 @@ classdef UC
     methods
         %------------------------------------------------------------------
         %Constructor function
-        function uc = UC(val, err, name, hash)
+        function uc = UC(val, err, inputNames, dydx)
             [~,fldr] = fileparts(pwd);
             if strcmpi(fldr,'@UC')
                 error('MATLAB:UC',...
@@ -200,55 +178,78 @@ classdef UC
             end
             
             if nargin ~= 0
-                hash_stream = RandStream('mt19937ar','Seed','shuffle');
-                if nargin >= 2
-                    %Read values
-                    if ~isequal(size(val),size(err))
-                        if all(size(err) == 1)
-                            err = err.*ones(size(val));
-                        else
-                            error('Value and Error must be the same size')
-                        end
-                    end
-                    
-                    %Set hash
-                    if ~exist('hash','var')
-                        hash = rand(hash_stream,1,1);
-                    end
-                    
-                    %Set name
-                    if ~exist('name','var')
-                        name = '';
-                    end
-                   
-                    
-                elseif nargin == 1
-                    err = val .* 0;
-                    hash = rand(hash_stream,1,1);
-                    name = '';
-                end
-
-                if numel(hash) ~= numel(val)
-                    hash = ones(size(val)).*hash;
+                if ~iscell(val)
+                    val = num2cell(val);
                 end
                 
-                uc(numel(val)) = UC;
-                for i=1:numel(val)
-                    uc(i).Value = val(i);
-                    uc(i).Err = err(i);
-                    tmp = val(i)+err(i); %#ok<NASGU> %make sure they are compatible
-                    uc(i).Err_r = 0;
-                    uc(i).Hash = hash(i);
-                    if isempty(name)
-                        uc(i).Name = num2str(val(i));
+                % Set err to 0 if not provided, otherwise convert to cell
+                if ~exist('err','var')
+                    err = num2cell(zeros(size(val)));
+                else
+                    if ~iscell(err)
+                        err = num2cell(err);
+                    end
+                end
+
+                %Expand err if it is too small
+                if ~isequal(size(val),size(err))
+                    if all(size(err) == 1)
+                        err = cellfun(@(e) err{1}, val, 'UniformOutput',false);
                     else
-                        if numel(val) > 1
-                            uc(i).Name=strcat(name,'[',num2str(i),']');
-                        else
-                            uc(i).Name=name;
+                        error('Value and Error must be the same size')
+                    end
+                end
+
+                %Set name
+                if ~exist('inputNames','var')
+                    % Generate a random name if no name was specified
+                    randName = sprintf('ucvar%05d',round(rand(1,1)*100000));
+                    inputNames = cellfun(@(x) {randName},val,'UniformOutput',false);
+                    if numel(val) > 1
+                        for i = 1:numel(inputNames)
+                            inputNames{i} = strcat(inputNames{i},'[',num2str(i),']');
                         end
                     end
-                    uc(i).Contrib = {uc(i).Name; 1};
+                elseif ischar(inputNames)
+                    % Assign the input name to all values if the input
+                    % was a string
+                    inputNames = cellfun(@(x) {inputNames},val,'UniformOutput',false);
+                    if numel(val) > 1
+                        for i = 1:numel(inputNames)
+                            inputNames{i} = strcat(inputNames{i},'[',num2str(i),']');
+                        end
+                    end
+                else
+                    nameStr = cell(size(inputNames));
+                    for i = 1:numel(inputNames)
+                        nameStr{i} = 'f(';
+                        for j = 1:length(inputNames{i})-1
+                            nameStr{i} = strcat(nameStr{i},inputNames{i}{j},',');
+                        end
+                        nameStr{i} = strcat(nameStr{i},inputNames{i}{end},')');
+                    end
+                end
+
+                %Set derivatives to 1 if not provided
+                if ~exist('dydx','var')
+                    dydx = num2cell(ones(size(val)));
+                end
+
+                uc(numel(val)) = UC;
+                for i=1:numel(val)
+                    uc(i).Value = val{i};
+                    uc(i).e = err{i};
+                    uc(i).dydx = dydx{i};
+                    
+                    tmp = val{i}+err{i}; %#ok<NASGU> %make sure they are compatible types
+                    
+                    if exist('nameStr','var')
+                        uc(i).Name = nameStr{i};
+                    else
+                        uc(i).Name = inputNames{i}{1};
+                    end
+                    
+                    uc(i).Inputs = inputNames{i};
                 end
                 uc = reshape(uc,size(val));
             end
@@ -265,86 +266,51 @@ classdef UC
         %------------------------------------------------------------------
         function y = plus(A, B)
             % Addition operator
-            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
-            rhoAB = Ah==Bh;
-            yv = Av + Bv;
-            ye = sqrt(Ae.^2 + Be.^2 + 2.*rhoAB.*Ae.*Be);
-            y = UC(yv, ye, '', Ah+Bh);
-            
-            % Fractional contributions, fA + fB = 1
-            fA = Ae.^2 ./ ye.^2;
-            fB = Be.^2 ./ ye.^2;
-            
-            y = AssignContrib(y, A, B, fA, fB, '+');
+            %  f = a + b
+            %  dfdx = dadx + dbdx
+            y = UC.BinaryFunction(A,B,...
+                                  @(a,b) a+b, ...
+                                  @(a,dadx,b,dbdx) dadx+dbdx);
         end
         
         %------------------------------------------------------------------
         function y = minus(A, B)
             % Subtraction operator
-            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
-            rhoAB = Ah==Bh;
-            yv = Av - Bv;
-            ye = sqrt(Ae.^2 + Be.^2 - 2.*rhoAB.*Ae.*Be);
-            y = UC(yv, ye, '', Ah-Bh);
-            
-            % Fractional contributions, fA + fB = 1
-            fA = Ae.^2 ./ ye.^2;
-            fB = Be.^2 ./ ye.^2;
-            
-            y = AssignContrib(y, A, B, fA, fB, '-');
+            %  f = a - b
+            %  dfdx = dadx - dbdx
+            y = UC.BinaryFunction(A,B,...
+                                  @(a,b) a-b, ...
+                                  @(a,dadx,b,dbdx) dadx-dbdx);
         end
         
         %------------------------------------------------------------------
         function y = times(A, B)
             % Multiplcation operator
-            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
-            rhoAB = Ah==Bh;
-            yv = Av.*Bv;
-            ye = sqrt((Bv.*Ae).^2 + (Av.*Be).^2 +...
-                      2.*rhoAB.*Av.*Bv.*Ae.*Be);
-            y = UC(yv, ye, '', Ah.*Bh);
-            
-            % Fractional contributions, fA + fB = 1
-            fA = (Ae.*Bv).^2 ./ ye.^2;
-            fB = (Av.*Be).^2 ./ ye.^2;
-            
-            y = AssignContrib(y, A, B, fA, fB, '*');
+            %  f = a*b
+            %  dfdx = b*dadx + a*dbdx
+            y = UC.BinaryFunction(A,B,...
+                                  @(a,b) a.*b, ...
+                                  @(a,dadx,b,dbdx) dadx.*b + dbdx.*a);
         end
         
         %------------------------------------------------------------------
-        function y = rdivide(A, B)
+        function y = rdivide(A, B)            
             % Division operator
-            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
-            rhoAB = Ah==Bh;
-            yv = Av./Bv;
-            ye = sqrt((Ae./Bv).^2 + (Av./Bv.^2.*Be).^2 - ...
-                      2.*rhoAB.*Ae.*Be./Av./Bv);
-            y = UC(yv, ye, '', Ah./Bh);
-            
-            % Fractional contributions, fA + fB = 1
-            fA = (Ae./Bv).^2 ./ ye.^2;
-            fB = (Av./Bv.^2.*Be).^2 ./ ye.^2;
-            
-            y = AssignContrib(y, A, B, fA, fB, '/');
+            %  f = a/b
+            %  dfdx = (b*dadx - a*dbdx)/b^2
+            y = UC.BinaryFunction(A,B,...
+                    @(a,b) a./b, ...
+                    @(a,dadx,b,dbdx) (b.*dadx - a.*dbdx)./b.^2);
         end
         
         %------------------------------------------------------------------
         function y = power(A, B)
             % Power operator
-            [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
-            rhoAB = Ah==Bh;
-            yv = Av.^Bv;
-            ye = sqrt((Bv.*Av.^(Bv-1).*Ae).^2 + ...
-                      (log(Av).*yv.*Be).^2 + ...
-                      2.*rhoAB.*Bv.*Av.^(Bv.*(Bv-1)).*log(Av).*Ae.*Be);
-            
-            y = UC(yv, ye, '', Ah.^Bh);
-            
-            % Fractional contributions, fA + fB = 1
-            fA = (Bv.*Av.^(Bv-1).*Ae).^2 ./ ye.^2;
-            fB = (log(Av).*yv.*Be).^2 ./ ye.^2;
-            
-            y = AssignContrib(y, A, B, fA, fB, '^');
+            %  f = a^b
+            %  dfdx = b*a^(b-1)*dadx + a^b*log(a)*dbdx
+            y = UC.BinaryFunction(A,B,...
+                    @(a,b) a.^b, ...
+                    @(a,dadx,b,dbdx) b.*a.^(b-1).*dadx+a.^b.*log(a).*dbdx);
         end
        
         %------------------------------------------------------------------
@@ -417,56 +383,19 @@ classdef UC
         %------------------------------------------------------------------
         function y = mtimes(A, B)
             % Matrix/vector multiplcation ('*' operator)
-            
-            % More efficient, but does not calculate Contrib
-%             
-%             [Av,Ae,Ah,Bv,Be,Bh] = UC.EqualizeInputs(A,B);
-%             
-%             yv = Av*Bv;
-%             ye = sqrt((Av.^2)*(Be.^2) + (Ae.^2)*(Bv.^2));
-%             y = UC(yv, ye, '', Ah*Bh);
-%             
-%             % Fractional contributions, fA + fB = 1
-%             fA = ((Ae.^2)*(Bv.^2)) ./ ye.^2;
-%             fB = ((Av.^2)*(Be.^2)) ./ ye.^2;
-
-            
-
-            % Loop approach calculates contrib
-            sA = size(A);
-            sB = size(B);
-            
-            if length(sA) > 2 || length(sB) > 2
-                error('UC:mtimes',...
-                      'Inputs must be 2-D or lower');
-            end
-            
-            y(1:sA(1),1:sB(2)) = UC;
-            for i = 1:sA(1)
-                for j = 1:sB(2)
-                    y(i,j) = A(i,1).*B(1,j);
-                    for k = 2:sA(2)
-                        y(i,j) = y(i,j) + A(i,k).*B(k,j);
-                    end
-                end
-            end
+            y = A.*B;
         end
         
         %------------------------------------------------------------------
         function y = mrdivide(A, B)
             % Matrix division
-            % y = A * inv(B)
             y = A ./ B;
-            %error('UC:mrdivide',...
-            %      'UC matrix inversion is not yet supported');
         end
         
         %------------------------------------------------------------------
         function y = mpower(A, B)
             % Matrix power operator
             y = A .^ B;
-            %error('UC:mpower',...
-            %      'UC matrix power is not yet supported');
         end
         
         %------------------------------------------------------------------
@@ -478,7 +407,7 @@ classdef UC
         %------------------------------------------------------------------
         function y = abs(x)
             % Absolute value
-            y = UC.UnaryFunction(x, @abs, @(v) 1);
+            y = UC.UnaryFunction(x, @abs, @(v) sign(v));
         end
         
         %------------------------------------------------------------------
@@ -584,19 +513,18 @@ classdef UC
         end
         
         %------------------------------------------------------------------
-        function y = sum(x)
-            % Array sum function (does not exactly mimic sum for matrices) 
-            y = UC(sum([x.Value]), ...
-                   sqrt(sum([x.Err].^2)), ...
-                   strcat('sum(',x(1).Name,')'));
+        function y = sum(a)
+            % Array sum function (does not exactly mimic sum for matrices)
+            y = a(1);
+            for i = 2:numel(a)
+                y = y + a(i);
+            end
         end
         
         %------------------------------------------------------------------
-        function y = mean(x)
-            % Array mean function (does not exactly mimic mean for matrices) 
-            y = UC(mean([x.Value]), ...
-                   sqrt(sum([x.Err].^2))./numel(x), ...
-                   strcat('mean(',x(1).Name,')'));
+        function y = mean(a)
+            % Array mean function (does not exactly mimic mean for matrices)
+            y = sum(a)/numel(a);
         end
         
         %------------------------------------------------------------------
@@ -633,10 +561,11 @@ classdef UC
             end
         end
         
-        %-----------------------------------------------------------------
-        function hash(a)
-            % Display the component hash
-            disp([a.Hash]);
+        
+        %------------------------------------------------------------------
+        function Err = get.Err(self)
+            % Return the total uncertainty
+            Err = sqrt(sum((self.e.*self.dydx).^2));
         end
         
     end %end methods

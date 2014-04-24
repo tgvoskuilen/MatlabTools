@@ -33,6 +33,7 @@ clear all
 close all
 clc
 
+
 % This script tests all the overloaded functions and methods in UC
 % Giving a name to a UC is not required, but is recommended. The name
 % will be carried through calculations so you can see its effect on later
@@ -42,15 +43,9 @@ fprintf('Testing variable construction\n');
 x = UC([10 12 -12],[1 3 4],'x');  %vector values, vector errors
 y = UC([1 2 3 4]', 2, 'y');       %vector values, scalar error
 z = UC(15, 10, 'z');              %scalar value, scalar error
-m = UC(10*ones(4,4),1,'m');       %matrix values, scalar error
-p = UC(8*ones(4,4),ones(4,4),'p');%matrix values, matrix error
 s = 4.5;                          %a normal scalar (not a UC)
 
 fprintf('Testing basic math and vector operations\n');
-mp = y*x;
-l = mp*m;
-q = p*m;
-rhs = p*y;
 a = y(1)*(z+15);
 c = x + z;
 d = x - z;
@@ -61,6 +56,16 @@ h = z .^ x;
 j = x ^ 2;
 xpy = x + z;
 xps = x + s;
+
+fprintf('Testing self-correlation accuracy\n');
+a = UC(100,1,'a');
+b = UC(10,4,'b');
+c = UC(95,2,'c');
+
+% These should be the same if correlations are handled properly
+p1 = b*(a-c) %#ok<NOPTS>
+p2 = a*b - c*b %#ok<NOPTS>
+
 
 fprintf('Testing error propogation through several operations\n');
 v1 = sqrt(x + z);
@@ -133,7 +138,7 @@ t1 = 0:0.05:10;
 t2 = 12:0.05:22;
 
 P1 = UC(10 + 0.5*randn(size(t1)), eP, 'PT_01');
-P2 = UC(8 + 0.5*randn(size(t2)),  eP, 'PT_01', P1(1).Hash);
+P2 = UC(8 + 0.5*randn(size(t2)),  eP, 'PT_01');
 td = 11;
 
 [Pi,mi,bi] = linear_projection(t1,P1,td);
