@@ -191,7 +191,7 @@ classdef UC
                     % Generate a random name if no name was specified
                     %  x = UC(10,2)
                     name = 'UCvar';
-                    randName = sprintf('%s%05d',name,round(rand(1,1)*100000));
+                    randName = sprintf('%s_%05d',name,round(rand(1,1)*100000));
                     inputNames = cellfun(@(x) {randName},val,'UniformOutput',false);
                     if numel(val) > 1
                         for i = 1:numel(inputNames)
@@ -203,7 +203,7 @@ classdef UC
                     % was a string
                     %  x = UC(10,2,'x')
                     name = inputNames;
-                    randName = sprintf('%s%05d',name,round(rand(1,1)*100000));
+                    randName = sprintf('%s_%05d',name,round(rand(1,1)*100000));
                     inputNames = cellfun(@(x) {randName},val,'UniformOutput',false);
                     if numel(val) > 1
                         for i = 1:numel(inputNames)
@@ -214,10 +214,16 @@ classdef UC
                     nameStr = cell(size(inputNames));
                     for i = 1:numel(inputNames)
                         nameStr{i} = 'f(';
-                        for j = 1:length(inputNames{i})-1
-                            nameStr{i} = strcat(nameStr{i},inputNames{i}{j}(1:end-5),',');
+                        for j = 1:length(inputNames{i})
+                            if isempty(strfind(inputNames{i}{j},'['))
+                                varName = inputNames{i}{j}(1:end-6);
+                            else
+                                varName = inputNames{i}{j}(1:end-9);
+                            end
+                            nameStr{i} = strcat(nameStr{i},varName,',');
                         end
-                        nameStr{i} = strcat(nameStr{i},inputNames{i}{end}(1:end-5),')');
+
+                        nameStr{i} = strcat(nameStr{i}(1:end-1),')');
                     end
                 end
 
@@ -236,10 +242,8 @@ classdef UC
                     
                     if exist('nameStr','var')
                         uc(i).Name = nameStr{i};
-                        %uc(i).UCName = '';
                     else
                         uc(i).Name = name;
-                        %uc(i).UCName = inputNames{i}{1};
                     end
                     
                     uc(i).Inputs = inputNames{i};
