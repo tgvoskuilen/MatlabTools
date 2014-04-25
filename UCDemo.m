@@ -57,7 +57,7 @@ j = x ^ 2;
 xpy = x + z;
 xps = x + s;
 
-fprintf('Testing self-correlation accuracy\n');
+fprintf('Testing self-correlation accuracy (should all be 50 +/- 30)\n');
 a = UC(100,1,'a');
 b = UC(10,4,'b');
 c = UC(95,2,'c');
@@ -70,6 +70,7 @@ i2 = c*b;
 p3 = i1-i2 %#ok<NOPTS>
 
 % Slightly more complicated self-correlation test
+fprintf('Testing self-correlation accuracy (dnudd should be -0.3183)\n');
 d = UC(1,0.8,'d');
 n1 = UC(1,0.1,'n1');
 n2 = UC(-1,0.1,'n2');
@@ -79,10 +80,10 @@ nu = x1 - x2;
 nu.Inputs
 nu.dydx  %dnu/dd should be -1/pi (-0.3183)
 
-fprintf('Testing duplicate name treatment\n');
+fprintf('Testing duplicate name treatment (should not have 0 error)\n');
 a1 = UC(10,9,'a');
 a2 = UC(10,1,'a');
-d = a1 - a2;
+d = a1 - a2 %#ok<NOPTS>
 
 fprintf('Testing error propogation through several operations\n');
 v1 = sqrt(x + z);
@@ -141,7 +142,9 @@ hD = plot(x,y);
 hP = plot(xp,yp);
 set(hD,'MarkerFaceColor',[0.5 0.5 0.5]);
 set(hP,'Marker','s','MarkerSize',9,'MarkerFaceColor','r');
-
+set(gca,'Box','on')
+xlabel('x')
+ylabel('y')
 % An example using correlated uncertainties
 % P1 and P2 are from the same instrument, so they are highly correlated
 % with Rc = 0.99

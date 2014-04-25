@@ -48,7 +48,6 @@ classdef UC
     %----------------------------------------------------------------------
     properties (SetAccess = protected) %You may not change these
         Name = '';   % Variable name
-        %UCName = ''; % Randomized name
         Value = 0;   % Value
         Inputs = {}; % Cell array of inputs to this variable
         dydx = [];   % Array of derivatives for each input
@@ -412,7 +411,7 @@ classdef UC
         %------------------------------------------------------------------
         function y = cos(x)
             % Cosine function
-            y = UC.UnaryFunction(x, @cos, @sin );
+            y = UC.UnaryFunction(x, @cos, @(v) -sin(v) );
         end
         
         %------------------------------------------------------------------
@@ -430,7 +429,7 @@ classdef UC
         %------------------------------------------------------------------
         function y = csc(x)
             % Cosecant function
-            y = UC.UnaryFunction(x, @csc, @(v) csc(v).*cot(x));
+            y = UC.UnaryFunction(x, @csc, @(v) -csc(v).*cot(x));
         end
         
         %------------------------------------------------------------------
@@ -442,7 +441,7 @@ classdef UC
         %------------------------------------------------------------------
         function y = cot(x)
             % Cotangent function
-            y = UC.UnaryFunction(x, @cot, @(v) csc(v).^2);
+            y = UC.UnaryFunction(x, @cot, @(v) -csc(v).^2);
         end
         
         %------------------------------------------------------------------
@@ -460,7 +459,7 @@ classdef UC
         %------------------------------------------------------------------
         function y = acos(x)
             % Inverse cosine function
-            y = UC.UnaryFunction(x, @acos, @(v) 1./sqrt(1-v.^2));
+            y = UC.UnaryFunction(x, @acos, @(v) -1./sqrt(1-v.^2));
         end
         
         %------------------------------------------------------------------
@@ -472,13 +471,13 @@ classdef UC
         %------------------------------------------------------------------
         function y = acsc(x)
             % Inverse cosecant function
-            y = UC.UnaryFunction(x, @acsc, @(v) 1./(v.*sqrt(v.^2-1)));
+            y = UC.UnaryFunction(x, @acsc, @(v) -1./(v.*sqrt(v.^2-1)));
         end
         
         %------------------------------------------------------------------
         function y = acot(x)
             % Inverse cotangent function
-            y = UC.UnaryFunction(x, @acot, @(v) 1./(1+v.^2));
+            y = UC.UnaryFunction(x, @acot, @(v) -1./(1+v.^2));
         end
         
         %------------------------------------------------------------------
