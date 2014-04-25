@@ -48,6 +48,7 @@ classdef UC
     %----------------------------------------------------------------------
     properties (SetAccess = protected) %You may not change these
         Name = '';   % Variable name
+        %UCName = ''; % Randomized name
         Value = 0;   % Value
         Inputs = {}; % Cell array of inputs to this variable
         dydx = [];   % Array of derivatives for each input
@@ -188,7 +189,9 @@ classdef UC
                 %Set name
                 if ~exist('inputNames','var')
                     % Generate a random name if no name was specified
-                    randName = sprintf('ucvar%05d',round(rand(1,1)*100000));
+                    %  x = UC(10,2)
+                    name = 'UCvar';
+                    randName = sprintf('%s%05d',name,round(rand(1,1)*100000));
                     inputNames = cellfun(@(x) {randName},val,'UniformOutput',false);
                     if numel(val) > 1
                         for i = 1:numel(inputNames)
@@ -198,7 +201,10 @@ classdef UC
                 elseif ischar(inputNames)
                     % Assign the input name to all values if the input
                     % was a string
-                    inputNames = cellfun(@(x) {inputNames},val,'UniformOutput',false);
+                    %  x = UC(10,2,'x')
+                    name = inputNames;
+                    randName = sprintf('%s%05d',name,round(rand(1,1)*100000));
+                    inputNames = cellfun(@(x) {randName},val,'UniformOutput',false);
                     if numel(val) > 1
                         for i = 1:numel(inputNames)
                             inputNames{i} = strcat(inputNames{i},'[',num2str(i),']');
@@ -209,9 +215,9 @@ classdef UC
                     for i = 1:numel(inputNames)
                         nameStr{i} = 'f(';
                         for j = 1:length(inputNames{i})-1
-                            nameStr{i} = strcat(nameStr{i},inputNames{i}{j},',');
+                            nameStr{i} = strcat(nameStr{i},inputNames{i}{j}(1:end-5),',');
                         end
-                        nameStr{i} = strcat(nameStr{i},inputNames{i}{end},')');
+                        nameStr{i} = strcat(nameStr{i},inputNames{i}{end}(1:end-5),')');
                     end
                 end
 
@@ -230,8 +236,10 @@ classdef UC
                     
                     if exist('nameStr','var')
                         uc(i).Name = nameStr{i};
+                        %uc(i).UCName = '';
                     else
-                        uc(i).Name = inputNames{i}{1};
+                        uc(i).Name = name;
+                        %uc(i).UCName = inputNames{i}{1};
                     end
                     
                     uc(i).Inputs = inputNames{i};

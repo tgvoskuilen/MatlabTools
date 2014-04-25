@@ -79,6 +79,11 @@ nu = x1 - x2;
 nu.Inputs
 nu.dydx  %dnu/dd should be -1/pi (-0.3183)
 
+fprintf('Testing duplicate name treatment\n');
+a1 = UC(10,9,'a');
+a2 = UC(10,1,'a');
+d = a1 - a2;
+
 fprintf('Testing error propogation through several operations\n');
 v1 = sqrt(x + z);
 v2 = exp(z);
