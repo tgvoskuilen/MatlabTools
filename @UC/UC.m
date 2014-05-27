@@ -65,87 +65,90 @@ classdef UC
         
         %------------------------------------------------------------------
         function y = UnaryFunction(a,f,dfda)
-            Av = reshape({a.Value},size(a));
-            Ad = reshape({a.dydx},size(a));
+            A = reshape({a.Value},size(a));
+            dAdx = reshape({a.dydx},size(a));
             
             % Error vector and input vector do not change
             Ye = reshape({a.e},size(a));
             Yi = reshape({a.Inputs},size(a));
             
             % Value and derivative vector do change
-            Yv = cellfun(f, Av, 'UniformOutput',false);
-            Yd = cellfun(@(a,dadx) dfda(a).*dadx, Av, Ad,'UniformOutput',false);
+            Y = cellfun(f, A, 'UniformOutput',false);
+            dYdx = cellfun(@(a,dadx) dfda(a).*dadx, A, dAdx,...
+                           'UniformOutput',false);
                 
-            y = UC(Yv,Ye,Yi,Yd);
+            y = UC(Y,Ye,Yi,dYdx);
         end
         
         %------------------------------------------------------------------
         function y = BinaryFunction(a,b,f,dfdx)
             % Extract cell arrays from a and b inputs
-            [Av,Ad,Bv,Bd,Yi,Ye] = UC.EqualizeInputs(a,b);
+            [A,dAdx,B,dBdx,Yi,Ye] = UC.EqualizeInputs(a,b);
             
-            % Chain rule
-            Yd = cellfun(dfdx, Av,Ad,Bv,Bd,'UniformOutput',false);
-            Yv = cellfun(f, Av,Bv,'UniformOutput',false);
+            % Chain rule:
+            %  dYdx = dfdA*dAdx + dfdB*dBdx
+            %  The form of this function is provided by dfdx
+            dYdx = cellfun(dfdx, A,dAdx,B,dBdx,'UniformOutput',false);
+            Y = cellfun(f, A,B,'UniformOutput',false);
             
-            y = UC(Yv,Ye,Yi,Yd);
+            y = UC(Y,Ye,Yi,dYdx);
         end
         
         %------------------------------------------------------------------
-        function [Av,Adn,Bv,Bdn,Yi,Ye] = EqualizeInputs(A,B)
+        function [A,dAdx,B,dBdx,Yi,Ye] = EqualizeInputs(a,b)
             % Extract value, error, and derivative arrays from inputs
 
-            if isa(A,'UC')
-                Av = reshape({A.Value},size(A));
-                Ae = reshape({A.e},size(A));
-                Ad = reshape({A.dydx},size(A));
-                Ai = reshape({A.Inputs},size(A));
+            if isa(a,'UC')
+                A = reshape({a.Value},size(a));
+                Ae = reshape({a.e},size(a));
+                dAdx_o = reshape({a.dydx},size(a));
+                Ai = reshape({a.Inputs},size(a));
             else
-                Av = num2cell(A);
-                Ae = cell(size(A));
-                Ad = cell(size(A));
-                Ai = cell(size(A));
+                A = num2cell(a);
+                Ae = cell(size(a));
+                dAdx_o = cell(size(a));
+                Ai = cell(size(a));
             end
             
-            if isa(B,'UC')
-                Bv = reshape({B.Value},size(B));
-                Be = reshape({B.e},size(B));
-                Bd = reshape({B.dydx},size(B));
-                Bi = reshape({B.Inputs},size(B));
+            if isa(b,'UC')
+                B = reshape({b.Value},size(b));
+                Be = reshape({b.e},size(b));
+                dBdx_o = reshape({b.dydx},size(b));
+                Bi = reshape({b.Inputs},size(b));
             else
-                Bv = num2cell(B);
-                Be = cell(size(B));
-                Bd = cell(size(B));
-                Bi = cell(size(B));
+                B = num2cell(b);
+                Be = cell(size(b));
+                dBdx_o = cell(size(b));
+                Bi = cell(size(b));
             end
             
             % Expand cell arrays to match sizes
-            if all(size(A) == 1) && ~all(size(B) == 1) % expand A
-                Av = cellfun(@(x) Av{1}, Bv, 'UniformOutput',false);
-                Ae = cellfun(@(x) Ae{1}, Bv, 'UniformOutput',false);
-                Ad = cellfun(@(x) Ad{1}, Bv, 'UniformOutput',false);
-                Ai = cellfun(@(x) Ai{1}, Bv, 'UniformOutput',false);
-            elseif all(size(B) == 1) && ~all(size(A) == 1) % expand B
-                Bv = cellfun(@(x) Bv{1}, Av, 'UniformOutput',false);
-                Be = cellfun(@(x) Be{1}, Av, 'UniformOutput',false);
-                Bd = cellfun(@(x) Bd{1}, Av, 'UniformOutput',false);
-                Bi = cellfun(@(x) Bi{1}, Av, 'UniformOutput',false);
+            if all(size(a) == 1) && ~all(size(b) == 1) % expand A
+                A = cellfun(@(x) A{1},  B, 'UniformOutput',false);
+                Ae = cellfun(@(x) Ae{1}, B, 'UniformOutput',false);
+                dAdx_o = cellfun(@(x) dAdx_o{1}, B, 'UniformOutput',false);
+                Ai = cellfun(@(x) Ai{1}, B, 'UniformOutput',false);
+            elseif all(size(b) == 1) && ~all(size(a) == 1) % expand B
+                B = cellfun(@(x) B{1},  A, 'UniformOutput',false);
+                Be = cellfun(@(x) Be{1}, A, 'UniformOutput',false);
+                dBdx_o = cellfun(@(x) dBdx_o{1}, A, 'UniformOutput',false);
+                Bi = cellfun(@(x) Bi{1}, A, 'UniformOutput',false);
             end
             
             % Get list of unique inputs for each component
-            [Yi,~,ic] = cellfun(@(a,b) unique([a, b],'stable'),Ai,Bi,'UniformOutput',false);
+            [Yi,~,ic] = cellfun(@(x,y) unique([x, y],'stable'),Ai,Bi,...
+                                'UniformOutput',false);
 
             % Expand e and d vectors
-            Adn = cellfun(@(c) zeros(size(c)),Yi,'UniformOutput',false);
-            Bdn = cellfun(@(c) zeros(size(c)),Yi,'UniformOutput',false);
+            dAdx = cellfun(@(c) zeros(size(c)),Yi,'UniformOutput',false);
+            dBdx = cellfun(@(c) zeros(size(c)),Yi,'UniformOutput',false);
             Ye = cellfun(@(c) zeros(size(c)),Yi,'UniformOutput',false);
-            for i = 1:numel(Ad)
-                Adn{i}(ic{i}(1:numel(Ad{i}))) = Ad{i};
-                Bdn{i}(ic{i}(numel(Ad{i})+1:end)) = Bd{i};
+            for i = 1:numel(dAdx)
+                dAdx{i}(ic{i}(1:numel(dAdx_o{i}))) = dAdx_o{i};
+                dBdx{i}(ic{i}(numel(dAdx_o{i})+1:end)) = dBdx_o{i};
                 Ye{i}(ic{i}(1:numel(Ae{i}))) = Ae{i};
                 Ye{i}(ic{i}(numel(Ae{i})+1:end)) = Be{i};
             end
-
         end
         
     end
