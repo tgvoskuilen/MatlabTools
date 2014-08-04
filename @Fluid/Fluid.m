@@ -86,7 +86,7 @@ classdef Fluid
         function GetNISTData()
 
             % Get User Inputs
-            prompt = {'Enter Gas Type (H2, He, etc...):'...
+            prompt = {'Enter Gas Type (H2, He, etc...):',...
                       'Enter T_{min} (K)',...
                       'Enter T_{max} (K)',...
                       'Enter T_{increment}(K)',...
@@ -325,7 +325,8 @@ classdef Fluid
         function g = Fluid(name)
             if nargin ~= 0
                 try
-                    matfile = strcat('NIST_',name,'_Props.mat');
+                    fluidPath = fileparts(which('Fluid'));
+                    matfile = fullfile(fluidPath,strcat('NIST_',name,'_Props.mat'));
                     if exist(matfile,'file')
                         fluid = load(matfile);
                     else
