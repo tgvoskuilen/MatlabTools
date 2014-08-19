@@ -7,14 +7,14 @@ Installation
 ### Using SSH or Linux
 Use an SSH client to log in to a Linux server if you are not on one, or just
 open a terminal. To clone this repository into your Matlab folder (assuming
-it is at `~/MATLAB`), enter the following commands:
+it is at `~/Personal/MATLAB`), enter the following commands:
 
-    cd ~/MATLAB
+    cd ~/Personal/MATLAB
     git clone git://github.com/tgvoskuilen/MatlabTools.git
     
 To update your version of the code if you have already cloned the repository:
 
-    cd ~/MATLAB/MatlabTools
+    cd ~/Personal/MATLAB/MatlabTools
     git pull
     
 To have the MatlabTools folder added to your Matlab path by default, add the
